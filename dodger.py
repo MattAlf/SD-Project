@@ -53,9 +53,13 @@ font = pygame.font.SysFont(None, 48)
 gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
-# Set up images.
+# Set up images + gravity
 playerImage = pygame.image.load('player.png')
 playerRect = playerImage.get_rect()
+vel_y = 0            # Vertical velocity
+gravity = 0.5        # Gravity acceleration
+jump_strength = -10   # How strong the jump is
+on_ground = False     # Is player on the ground?
 baddieImage = pygame.image.load('baddie.png')
 
 # Show the "Start" screen.
@@ -95,11 +99,9 @@ while True:
                     moveLeft = False
                     moveRight = True
                 if event.key == K_UP or event.key == K_w:
-                    moveDown = False
-                    moveUp = True
-                if event.key == K_DOWN or event.key == K_s:
-                    moveUp = False
-                    moveDown = True
+                    if on_ground:
+                        vel_y = jump_strength
+                        on_ground = False
 
             if event.type == KEYUP:
                 if event.key == K_z:
@@ -137,15 +139,21 @@ while True:
 
             baddies.append(newBaddie)
 
-        # Move the player around.
+                 # Horizontal movement
         if moveLeft and playerRect.left > 0:
-            playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+            playerRect.move_ip(-PLAYERMOVERATE, 0)
         if moveRight and playerRect.right < WINDOWWIDTH:
             playerRect.move_ip(PLAYERMOVERATE, 0)
-        if moveUp and playerRect.top > 0:
-            playerRect.move_ip(0, -1 * PLAYERMOVERATE)
-        if moveDown and playerRect.bottom < WINDOWHEIGHT:
-            playerRect.move_ip(0, PLAYERMOVERATE)
+
+# Apply gravity
+        vel_y += gravity
+        playerRect.y += vel_y
+
+# Ground collision (let’s assume ground at bottom of screen)
+        if playerRect.bottom >= WINDOWHEIGHT:
+            playerRect.bottom = WINDOWHEIGHT
+            vel_y = 0
+            on_ground = True
 
         # Move the baddies down.
         for b in baddies:
