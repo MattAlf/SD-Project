@@ -12,6 +12,9 @@ BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
+ADDPLATEFORMERATE = 20
+PLATEFORMSIZE = 30
+PLATEFORMESPEED = 3
 
 def terminate():
     pygame.quit()
@@ -30,6 +33,12 @@ def waitForPlayerToPressKey():
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
+            return True
+    return False
+
+def playerIsOnAPlateforme(playerRect, plateforme):
+    for p in plateforme: 
+        if playerRect.colliderect(p['rect']):
             return True
     return False
 
@@ -57,6 +66,7 @@ pygame.mixer.music.load('background.mid')
 playerImage = pygame.image.load('player.png')
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
+plateformeImage = pygame.image.load('plateforme.png')
 
 # Show the "Start" screen.
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -69,14 +79,15 @@ topScore = 0
 while True:
     # Set up the start of the game.
     baddies = []
+    plateforme = []
     score = 0
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
+    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0
+    plateformeadd = 0
     pygame.mixer.music.play(-1, 0.0)
 
-    #salutations
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
@@ -131,6 +142,7 @@ while True:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
+            plateformesize = PLATEFORMSIZE
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - baddieSize), 0 - baddieSize, baddieSize, baddieSize),
                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
@@ -138,6 +150,18 @@ while True:
                         }
 
             baddies.append(newBaddie)
+
+        # Add plateforme
+        plateformeadd += 1
+        if plateformeadd == ADDPLATEFORMERATE:
+            plateformeadd = 0 
+            plateformesize = PLATEFORMSIZE
+            newPlateforme = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - plateformesize), 0 - plateformesize, plateformesize, plateformesize),
+                        'speed': PLATEFORMESPEED,
+                        'surface':pygame.transform.scale(plateformeImage, (50, 15)),
+                        }
+            
+            plateforme.append(newPlateforme)
 
         # Move the player around.
         if moveLeft and playerRect.left > 0:
@@ -163,6 +187,14 @@ while True:
             if b['rect'].top > WINDOWHEIGHT:
                 baddies.remove(b)
 
+        #plateform apparition
+        for p in plateforme: 
+            p['rect'].move_ip(0, p['speed'])
+
+        for p in plateforme: 
+            if p['rect'].top > WINDOWHEIGHT:
+                plateforme.remove(p)
+
         # Draw the game world on the window.
         windowSurface.fill(BACKGROUNDCOLOR)
 
@@ -177,7 +209,15 @@ while True:
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
+        # Draw each palteforme.
+        for p in plateforme: 
+            windowSurface.blit(p['surface'], p['rect'])
+
         pygame.display.update()
+
+        # Jump when on a plateforme
+        if playerIsOnAPlateforme(playerRect, plateforme):
+            playerRect.move_ip(0, -1 * PLAYERMOVERATE)
 
         # Check if any of the baddies have hit the player.
         if playerHasHitBaddie(playerRect, baddies):
