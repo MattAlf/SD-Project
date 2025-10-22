@@ -1,5 +1,3 @@
-#testing pull requests
-
 import pygame, random, sys
 from pygame.locals import *
 
