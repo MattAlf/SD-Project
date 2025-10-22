@@ -1,8 +1,8 @@
 import pygame, random, sys
 from pygame.locals import *
 
-WINDOWWIDTH = 1000
-WINDOWHEIGHT = 1000
+WINDOWWIDTH = 600
+WINDOWHEIGHT = 600
 TEXTCOLOR = (0, 0, 0)
 BACKGROUNDCOLOR = (255, 255, 255)
 FPS = 60
@@ -155,6 +155,18 @@ while True:
 
             baddies.append(newBaddie)
 
+        # Add plateforme
+        plateformeadd += 1
+        if plateformeadd == ADDPLATEFORMERATE:
+            plateformeadd = 0 
+            plateformesize = PLATEFORMSIZE
+            newPlateforme = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - plateformesize), 0 - plateformesize, plateformesize, plateformesize),
+                        'speed': PLATEFORMESPEED,
+                        'surface':pygame.transform.scale(plateformeImage, (50, 15)),
+                        }
+            
+            plateforme.append(newPlateforme)
+
                  # Horizontal movement
         if moveLeft and playerRect.left > 0:
             playerRect.move_ip(-PLAYERMOVERATE, 0)
@@ -215,7 +227,7 @@ while True:
 
         # Jump when on a plateforme
         if playerIsOnAPlateforme(playerRect, plateforme):
-            playerRect.move_ip(0, -1 * PLAYERMOVERATE)
+            playerRect.move_ip(0, -4 * PLAYERMOVERATE)
 
         # Check if any of the baddies have hit the player.
         if playerHasHitBaddie(playerRect, baddies):
