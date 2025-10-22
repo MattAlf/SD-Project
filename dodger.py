@@ -76,6 +76,8 @@ while True:
     baddieAddCounter = 0
     pygame.mixer.music.play(-1, 0.0)
 
+    #salutations
+
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
 
