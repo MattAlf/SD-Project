@@ -46,6 +46,12 @@ windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
 
+# Set up gravity + jump
+vel_y = 0            # Vertical velocity
+gravity = 0.5        # Gravity acceleration
+jump_strength = -15   # How strong the jump is
+on_ground = False     # Is player on the ground?
+
 # Set up the fonts.
 font = pygame.font.SysFont(None, 48)
 
@@ -53,13 +59,9 @@ font = pygame.font.SysFont(None, 48)
 gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
-# Set up images + gravity
+# Set up images
 playerImage = pygame.image.load('player.png')
 playerRect = playerImage.get_rect()
-vel_y = 0            # Vertical velocity
-gravity = 0.5        # Gravity acceleration
-jump_strength = -10   # How strong the jump is
-on_ground = False     # Is player on the ground?
 baddieImage = pygame.image.load('baddie.png')
 
 # Show the "Start" screen.
