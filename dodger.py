@@ -36,8 +36,8 @@ def playerHasHitBaddie(playerRect, baddies):
             return True
     return False
 
-def playerIsOnAPlateforme(playerRect, plateforme):
-    for p in plateforme: 
+def playerIsOnAPlatform(playerRect, platforms):
+    for p in platforms: 
         if playerRect.colliderect(p['rect']):
             return True
     return False
@@ -57,7 +57,7 @@ pygame.mouse.set_visible(False)
 
 # Set up gravity + jump
 vel_y = 0            # Vertical velocity
-gravity = 0.5        # Gravity acceleration
+gravity = 0.8       # Gravity acceleration
 jump_strength = -15   # How strong the jump is
 on_ground = False     # Is player on the ground?
 
@@ -85,13 +85,13 @@ topScore = 0
 while True:
     # Set up the start of the game.
     baddies = []
-    plateforme = []
+    platforms = []
     score = 0
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0
-    plateformeadd = 0
+    platformAddCounter = 0
     pygame.mixer.music.play(-1, 0.0)
 
 
@@ -156,16 +156,16 @@ while True:
             baddies.append(newBaddie)
 
         # Add plateforme
-        plateformeadd += 1
-        if plateformeadd == ADDPLATEFORMERATE:
-            plateformeadd = 0 
-            plateformesize = PLATEFORMSIZE
-            newPlateforme = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - plateformesize), 0 - plateformesize, plateformesize, plateformesize),
+        platformAddCounter += 1
+        if platformAddCounter == ADDPLATEFORMERATE:
+            platformAddCounter = 0 
+            platformsize = PLATEFORMSIZE
+            newPlatform = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - platformsize), 0 - platformsize, platformsize, platformsize),
                         'speed': PLATEFORMESPEED,
                         'surface':pygame.transform.scale(plateformeImage, (50, 15)),
                         }
             
-            plateforme.append(newPlateforme)
+            platforms.append(newPlatform)
 
                  # Horizontal movement
         if moveLeft and playerRect.left > 0:
@@ -173,11 +173,28 @@ while True:
         if moveRight and playerRect.right < WINDOWWIDTH:
             playerRect.move_ip(PLAYERMOVERATE, 0)
 
-# Apply gravity
+  # Store previous bottom so we can detect if the player moved down onto a platform this frame
+        prev_bottom = playerRect.bottom 
+
+        # Apply gravity
         vel_y += gravity
         playerRect.y += vel_y
 
-# Ground collision (let’s assume ground at bottom of screen)
+        # Platform collision: only when falling (vel_y > 0) and when the player
+        # moved from above the platform to intersect it this frame.
+        if vel_y > 0:
+            for p in platforms:
+                plat = p['rect']
+                # horizontal overlap check
+                if playerRect.right > plat.left and playerRect.left < plat.right:
+                    # came from above and now intersects the platform top
+                    if prev_bottom <= plat.top and playerRect.bottom >= plat.top:
+                        playerRect.bottom = plat.top + 3
+                        vel_y = 1
+                        on_ground = True
+                        break
+
+# Ground collision (bottom of screen)
         if playerRect.bottom >= WINDOWHEIGHT:
             playerRect.bottom = WINDOWHEIGHT
             vel_y = 0
@@ -197,13 +214,13 @@ while True:
             if b['rect'].top > WINDOWHEIGHT:
                 baddies.remove(b)
 
-        #plateform apparition
-        for p in plateforme: 
+        #platform apparition
+        for p in platforms: 
             p['rect'].move_ip(0, p['speed'])
 
-        for p in plateforme: 
+        for p in platforms: 
             if p['rect'].top > WINDOWHEIGHT:
-                plateforme.remove(p)
+                platforms.remove(p)
 
         # Draw the game world on the window.
         windowSurface.fill(BACKGROUNDCOLOR)
@@ -219,15 +236,11 @@ while True:
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
-        # Draw each palteforme.
-        for p in plateforme: 
+        # Draw each platform.
+        for p in platforms: 
             windowSurface.blit(p['surface'], p['rect'])
 
         pygame.display.update()
-
-        # Jump when on a plateforme
-        if playerIsOnAPlateforme(playerRect, plateforme):
-            playerRect.move_ip(0, -4 * PLAYERMOVERATE)
 
         # Check if any of the baddies have hit the player.
         if playerHasHitBaddie(playerRect, baddies):
