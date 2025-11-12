@@ -12,6 +12,9 @@ BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
+ADDPLATEFORMERATE = 20
+PLATEFORMSIZE = 30
+PLATEFORMESPEED = 3
 
 def terminate():
     pygame.quit()
@@ -33,6 +36,12 @@ def playerHasHitBaddie(playerRect, baddies):
             return True
     return False
 
+def playerIsOnAPlatform(playerRect, platforms):
+    for p in platforms: 
+        if playerRect.colliderect(p['rect']):
+            return True
+    return False
+
 def drawText(text, font, surface, x, y):
     textobj = font.render(text, 1, TEXTCOLOR)
     textrect = textobj.get_rect()
@@ -46,6 +55,12 @@ windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
 
+# Set up gravity + jump
+vel_y = 0            # Vertical velocity
+gravity = 0.8       # Gravity acceleration
+jump_strength = -15   # How strong the jump is
+on_ground = False     # Is player on the ground?
+
 # Set up the fonts.
 font = pygame.font.SysFont(None, 48)
 
@@ -53,10 +68,11 @@ font = pygame.font.SysFont(None, 48)
 gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
-# Set up images.
+# Set up images
 playerImage = pygame.image.load('player.png')
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
+plateformeImage = pygame.image.load('plateforme.png')
 
 # Show the "Start" screen.
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -69,12 +85,15 @@ topScore = 0
 while True:
     # Set up the start of the game.
     baddies = []
+    platforms = []
     score = 0
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
+    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0
+    platformAddCounter = 0
     pygame.mixer.music.play(-1, 0.0)
+
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
@@ -95,11 +114,9 @@ while True:
                     moveLeft = False
                     moveRight = True
                 if event.key == K_UP or event.key == K_w:
-                    moveDown = False
-                    moveUp = True
-                if event.key == K_DOWN or event.key == K_s:
-                    moveUp = False
-                    moveDown = True
+                    if on_ground:
+                        vel_y = jump_strength
+                        on_ground = False
 
             if event.type == KEYUP:
                 if event.key == K_z:
@@ -129,6 +146,7 @@ while True:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
+            plateformesize = PLATEFORMSIZE
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - baddieSize), 0 - baddieSize, baddieSize, baddieSize),
                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
@@ -137,15 +155,50 @@ while True:
 
             baddies.append(newBaddie)
 
-        # Move the player around.
+        # Add plateforme
+        platformAddCounter += 1
+        if platformAddCounter == ADDPLATEFORMERATE:
+            platformAddCounter = 0 
+            platformsize = PLATEFORMSIZE
+            newPlatform = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - platformsize), 0 - platformsize, platformsize, platformsize),
+                        'speed': PLATEFORMESPEED,
+                        'surface':pygame.transform.scale(plateformeImage, (50, 15)),
+                        }
+            
+            platforms.append(newPlatform)
+
+                 # Horizontal movement
         if moveLeft and playerRect.left > 0:
-            playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+            playerRect.move_ip(-PLAYERMOVERATE, 0)
         if moveRight and playerRect.right < WINDOWWIDTH:
             playerRect.move_ip(PLAYERMOVERATE, 0)
-        if moveUp and playerRect.top > 0:
-            playerRect.move_ip(0, -1 * PLAYERMOVERATE)
-        if moveDown and playerRect.bottom < WINDOWHEIGHT:
-            playerRect.move_ip(0, PLAYERMOVERATE)
+
+  # Store previous bottom so we can detect if the player moved down onto a platform this frame
+        prev_bottom = playerRect.bottom 
+
+        # Apply gravity
+        vel_y += gravity
+        playerRect.y += vel_y
+
+        # Platform collision: only when falling (vel_y > 0) and when the player
+        # moved from above the platform to intersect it this frame.
+        if vel_y > 0:
+            for p in platforms:
+                plat = p['rect']
+                # horizontal overlap check
+                if playerRect.right > plat.left and playerRect.left < plat.right:
+                    # came from above and now intersects the platform top
+                    if prev_bottom <= plat.top and playerRect.bottom >= plat.top:
+                        playerRect.bottom = plat.top + 3
+                        vel_y = 1
+                        on_ground = True
+                        break
+
+# Ground collision (bottom of screen)
+        if playerRect.bottom >= WINDOWHEIGHT:
+            playerRect.bottom = WINDOWHEIGHT
+            vel_y = 0
+            on_ground = True
 
         # Move the baddies down.
         for b in baddies:
@@ -161,6 +214,14 @@ while True:
             if b['rect'].top > WINDOWHEIGHT:
                 baddies.remove(b)
 
+        #platform apparition
+        for p in platforms: 
+            p['rect'].move_ip(0, p['speed'])
+
+        for p in platforms: 
+            if p['rect'].top > WINDOWHEIGHT:
+                platforms.remove(p)
+
         # Draw the game world on the window.
         windowSurface.fill(BACKGROUNDCOLOR)
 
@@ -174,6 +235,10 @@ while True:
         # Draw each baddie.
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
+
+        # Draw each platform.
+        for p in platforms: 
+            windowSurface.blit(p['surface'], p['rect'])
 
         pygame.display.update()
 
