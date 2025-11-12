@@ -195,7 +195,7 @@ while True:
 
         # Platform collision: only when falling (vel_y > 0) and when the player
         # moved from above the platform to intersect it this frame.
-        if vel_y >= PLATEFORMESPEED:
+        if vel_y == 0:
             for p in platforms:
                 plat = p['rect']
                 # horizontal overlap check
