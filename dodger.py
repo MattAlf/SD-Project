@@ -10,7 +10,7 @@ BADDIEMINSIZE = 10
 BADDIEMAXSIZE = 40
 BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
-ADDNEWBADDIERATE = 6
+ADDNEWBADDIERATE = 30
 PLAYERMOVERATE = 5
 ADDPLATEFORMERATE = 20
 PLATEFORMHIGH = 10
@@ -34,7 +34,7 @@ def waitForPlayerToPressKey():
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
-            return True
+            return False
     return False
 
 def playerIsOnAPlatform(playerRect, platforms):
@@ -95,6 +95,18 @@ while True:
     platformAddCounter = 0
     pygame.mixer.music.play(-1, 0.0)
 
+    num_platforms = 25
+    spacing = WINDOWHEIGHT // (num_platforms + 1)  # dynamic spacing
+
+    for i in range(num_platforms):
+        x = random.randint(0, WINDOWWIDTH - 50)
+        y = WINDOWHEIGHT - (i * spacing) - 50
+        newPlatform = {
+            'rect': pygame.Rect(x, y, 50, 15),
+            'speed': PLATEFORMESPEED,
+            'surface': pygame.transform.scale(plateformeImage, (50, 15))
+        }
+        platforms.append(newPlatform)
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
