@@ -13,8 +13,9 @@ BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
 ADDPLATEFORMERATE = 20
-PLATEFORMSIZE = 30
-PLATEFORMESPEED = 3
+PLATEFORMHIGH = 10
+PLATEFORMLARGE = 50
+PLATEFORMESPEED = 1
 
 def terminate():
     pygame.quit()
@@ -146,7 +147,6 @@ while True:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
-            plateformesize = PLATEFORMSIZE
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - baddieSize), 0 - baddieSize, baddieSize, baddieSize),
                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
@@ -159,10 +159,11 @@ while True:
         platformAddCounter += 1
         if platformAddCounter == ADDPLATEFORMERATE:
             platformAddCounter = 0 
-            platformsize = PLATEFORMSIZE
-            newPlatform = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - platformsize), 0 - platformsize, platformsize, platformsize),
+            platformhigh = PLATEFORMHIGH
+            platformlarge = PLATEFORMLARGE
+            newPlatform = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - platformlarge), 0 - platformhigh, platformlarge, platformhigh),
                         'speed': PLATEFORMESPEED,
-                        'surface':pygame.transform.scale(plateformeImage, (50, 15)),
+                        'surface':pygame.transform.scale(plateformeImage, (platformlarge, platformhigh)),
                         }
             
             platforms.append(newPlatform)
@@ -174,7 +175,7 @@ while True:
             playerRect.move_ip(PLAYERMOVERATE, 0)
 
   # Store previous bottom so we can detect if the player moved down onto a platform this frame
-        prev_bottom = playerRect.bottom 
+        prev_bottom = playerRect.bottom - 1
 
         # Apply gravity
         vel_y += gravity
@@ -182,15 +183,15 @@ while True:
 
         # Platform collision: only when falling (vel_y > 0) and when the player
         # moved from above the platform to intersect it this frame.
-        if vel_y > 0:
+        if vel_y >= PLATEFORMESPEED:
             for p in platforms:
                 plat = p['rect']
                 # horizontal overlap check
                 if playerRect.right > plat.left and playerRect.left < plat.right:
                     # came from above and now intersects the platform top
                     if prev_bottom <= plat.top and playerRect.bottom >= plat.top:
-                        playerRect.bottom = plat.top + 3
-                        vel_y = 1
+                        playerRect.bottom = plat.top 
+                        vel_y = PLATEFORMESPEED
                         on_ground = True
                         break
 
@@ -243,10 +244,10 @@ while True:
         pygame.display.update()
 
         # Check if any of the baddies have hit the player.
-        if playerHasHitBaddie(playerRect, baddies):
-            if score > topScore:
-                topScore = score # set new top score
-            break
+      #  if playerHasHitBaddie(playerRect, baddies):
+       #     if score > topScore:
+        #        topScore = score # set new top score
+         #   break
 
         mainClock.tick(FPS)
 
