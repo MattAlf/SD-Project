@@ -244,10 +244,10 @@ while True:
         pygame.display.update()
 
         # Check if any of the baddies have hit the player.
-      #  if playerHasHitBaddie(playerRect, baddies):
-       #     if score > topScore:
-        #        topScore = score # set new top score
-         #   break
+        if playerHasHitBaddie(playerRect, baddies):
+            if score > topScore:
+                topScore = score # set new top score
+            break
 
         mainClock.tick(FPS)
 
