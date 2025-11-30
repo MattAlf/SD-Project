@@ -1,7 +1,5 @@
 # main.py
-import pygame
-import sys
-import random
+import pygame, random, sys
 from pygame.locals import *
 
 # On importe nos modules persos

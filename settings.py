@@ -4,7 +4,7 @@ class Config:
     # Fenêtre
     WINDOW_WIDTH = 600
     WINDOW_HEIGHT = 600
-    CAPTION = 'Dodger Refactored'
+    CAPTION = 'Dodger'
     FPS = 60
 
     # Couleurs
