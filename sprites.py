@@ -1,7 +1,5 @@
 # sprites.py
-import pygame
-import random
-import sys
+import pygame, random, sys
 from settings import Config 
 
 class Entity(pygame.sprite.Sprite):
