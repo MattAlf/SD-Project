@@ -2,10 +2,9 @@
 import pygame
 import sys
 from pygame.locals import *
-from settings import Settings
+from settings import *
 from functions import *
-from player import Player
-from baddie import Baddie
+from entity import *
 from myplatform import MyPlatform
 from background import Background
 
@@ -43,7 +42,7 @@ wait_for_player_to_press_key()
 # First game loop
 while True:
     # Start a new game
-    player = Player(settings, PLAYER_IMAGE)
+    player = Player(settings.WINDOW_HEIGHT/2, settings.WINDOW_WIDTH/2)
     player_group = pygame.sprite.GroupSingle(player)
     baddie_group = pygame.sprite.Group()
     platform_group = pygame.sprite.Group()
@@ -67,7 +66,7 @@ while True:
         baddie_add_counter += 1
         if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
             baddie_add_counter = 0
-            baddie_group.add(Baddie(settings, BADDIE_IMAGE))
+            baddie_group.add(Baddies(settings, BADDIE_IMAGE))
 
         # Update game objects
         player.update(platform_group)

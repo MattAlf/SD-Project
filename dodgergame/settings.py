@@ -1,30 +1,29 @@
-# settings.py
+# settingspy
 class Settings:
-    def __init__(self):
-        # Window
-        self.WINDOW_WIDTH = 600
-        self.WINDOW_HEIGHT = 600
-        self.FPS = 60
+     # Window
+    WINDOW_WIDTH = 600
+    WINDOW_HEIGHT = 600
+    FPS = 60
         
-        # Colors
-        self.TEXT_COLOR = (0, 0, 0)
-        self.BACKGROUND_COLOR = (255, 255, 255)
+    # Colors
+    TEXT_COLOR = (0, 0, 0)
+    BACKGROUND_COLOR = (255, 255, 255)
 
-        # Background
-        self.BACKGROUND_SCROLL_SPEED = 1
+    # Background
+    BACKGROUND_SCROLL_SPEED = 1
         
-        # Player
-        self.PLAYER_MOVE_RATE = 5
-        self.PLAYER_SIZE = 40
-        self.PLAYER_GRAVITY = 0.5
-        self.PLAYER_JUMP_STRENGTH = -10
+    # Player
+    PLAYER_MOVE_RATE = 5
+    PLAYER_SIZE = 40
+    PLAYER_GRAVITY = 0.5
+    PLAYER_JUMP_STRENGTH = -10
         
-        # Baddie
-        self.BADDIE_MIN_SIZE = 10
-        self.BADDIE_MAX_SIZE = 40
-        self.BADDIE_MIN_SPEED = 1
-        self.BADDIE_MAX_SPEED = 8
-        self.ADD_NEW_BADDIE_RATE = 6
+    # Baddie
+    BADDIE_MIN_SIZE = 10
+    BADDIE_MAX_SIZE = 40
+    BADDIE_MIN_SPEED = 1
+    BADDIE_MAX_SPEED = 8
+    ADD_NEW_BADDIE_RATE = 6
 
-        # Platform
-        self.PLATFORM_HEIGHT = 20
+    # Platform
+    PLATFORM_HEIGHT = 20
