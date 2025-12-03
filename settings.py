@@ -15,10 +15,11 @@ class Settings:
     BACKGROUND_SCROLL_SPEED = 1
         
     # Player
-    PLAYER_MOVE_RATE = 5
     PLAYER_SIZE = 40
-    PLAYER_GRAVITY = 0.5
-    PLAYER_JUMP_STRENGTH = -10
+    PLAYER_JUMP_STRENGTH = 10 # How high the player can jump
+    HORIZONTAL_ACCELERATION = 2 # How quickly the player speeds up
+    HORIZONTAL_FRICTION = 0.2 # Friction
+    VERTICAL_ACCELERATION = 0.5 # Gravity
         
     # Baddie
     BADDIE_MIN_SIZE = 10
