@@ -1,31 +1,42 @@
-# settings.py
+import pygame 
+
+# settingspy
 class Settings:
-    def __init__(self):
-        # Window
-        self.WINDOW_WIDTH = 600
-        self.WINDOW_HEIGHT = 600
-        self.FPS = 60
+     # Window
+    WINDOW_WIDTH = 600
+    WINDOW_HEIGHT = 600
+    FPS = 60
         
-        # Colors
-        self.TEXT_COLOR = (0, 0, 0)
-        self.BACKGROUND_COLOR = (255, 255, 255)
+    # Colors
+    TEXT_COLOR = (0, 0, 0)
+    BACKGROUND_COLOR = (255, 255, 255)
 
-        # Background
-        self.BACKGROUND_SCROLL_SPEED = 1
+    # Background
+    BACKGROUND_SCROLL_SPEED = 1
         
-        # Player
-        self.PLAYER_SIZE = 40
-        self.PLAYER_JUMP_STRENGTH = 10 # How high the player can jump
-        self.HORIZONTAL_ACCELERATION = 2 # How quickly the player speeds up
-        self.HORIZONTAL_FRICTION = 0.2 # Friction
-        self.VERTICAL_ACCELERATION = 0.5 # Gravity
+    # Player
+    PLAYER_SIZE = 40
+    PLAYER_JUMP_STRENGTH = 10 # How high the player can jump
+    HORIZONTAL_ACCELERATION = 2 # How quickly the player speeds up
+    HORIZONTAL_FRICTION = 0.3 # Friction
+    VERTICAL_ACCELERATION = 0.5 # Gravity
         
-        # Baddie
-        self.BADDIE_MIN_SIZE = 10
-        self.BADDIE_MAX_SIZE = 40
-        self.BADDIE_MIN_SPEED = 1
-        self.BADDIE_MAX_SPEED = 8
-        self.ADD_NEW_BADDIE_RATE = 6
+    # Baddie
+    BADDIE_MIN_SIZE = 10
+    BADDIE_MAX_SIZE = 40
+    BADDIE_MIN_SPEED = 1
+    BADDIE_MAX_SPEED = 8
+    ADD_NEW_BADDIE_RATE = 6
 
-        # Platform
-        self.PLATFORM_HEIGHT = 20
+    # Platform
+    PLATFORM_HEIGHT = 20
+    PLATFORM_WIDTH = 50
+    PLATFORM_SPEED = BACKGROUND_SCROLL_SPEED
+    ADD_NEW_PLATFORM_RATE = 20
+
+    #Images 
+    PLAYER_IMAGE = pygame.image.load('player.png')
+    BADDIE_IMAGE = pygame.image.load('baddie.png')
+    PLATFORM_IMAGE = pygame.image.load('platform.png')
+    BACKGROUND_IMAGE = pygame.image.load('background.png')
+    GROUND_IMAGE = pygame.image.load('platform.png')
