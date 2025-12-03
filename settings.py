@@ -18,7 +18,7 @@ class Settings:
     PLAYER_SIZE = 40
     PLAYER_JUMP_STRENGTH = 10 # How high the player can jump
     HORIZONTAL_ACCELERATION = 2 # How quickly the player speeds up
-    HORIZONTAL_FRICTION = 0.2 # Friction
+    HORIZONTAL_FRICTION = 0.3 # Friction
     VERTICAL_ACCELERATION = 0.5 # Gravity
         
     # Baddie
