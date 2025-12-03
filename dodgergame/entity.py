@@ -92,6 +92,9 @@ class Baddies(Entity):
         x = random.randint(0, settings.WINDOW_WIDTH - self.size)
         y = 0 - self.size
         super().__init__(image, x, y)
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        
         self.speed = random.randint(settings.BADDIE_MIN_SPEED, settings.BADDIE_MAX_SPEED)
 
     def update(self):
