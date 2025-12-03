@@ -28,6 +28,9 @@ background_group = pygame.sprite.Group()
 background_group.add(Background(settings, settings.BACKGROUND_IMAGE, 0))
 background_group.add(Background(settings, settings.BACKGROUND_IMAGE, 0 - settings.WINDOW_HEIGHT))
 background_group.draw(window_surface)
+ground_group = pygame.sprite.Group()
+ground_group.add(Ground(settings.GROUND_IMAGE))
+ground_group.draw(window_surface)
 draw_text('Dodger', font, window_surface, settings.WINDOW_WIDTH // 3, settings.WINDOW_HEIGHT // 3)
 draw_text('Press a key to start.', font, window_surface, settings.WINDOW_WIDTH // 3, (settings.WINDOW_HEIGHT // 3) + 50)
 pygame.display.update()
@@ -56,7 +59,7 @@ while True:
 
         # Event handling
         for event in pygame.event.get():
-            player.handle_input(event)
+            player.handle_input(event, ground_group, platform_group)
 
         # Add new baddies
         baddie_add_counter += 1
@@ -71,7 +74,7 @@ while True:
             platform_group.add(Platform(settings, settings.PLATFORM_IMAGE))
 
         # Update game objects
-        player.update(platform_group)
+        player.update(ground_group, platform_group)
         baddie_group.update()
         platform_group.update()
         background_group.update()
@@ -82,6 +85,8 @@ while True:
         player_group.draw(window_surface)
         baddie_group.draw(window_surface)
         platform_group.draw(window_surface)
+        ground_group.draw(window_surface)
+
 
 
         # Update display inside the game

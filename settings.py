@@ -39,3 +39,4 @@ class Settings:
     BADDIE_IMAGE = pygame.image.load('baddie.png')
     PLATFORM_IMAGE = pygame.image.load('platform.png')
     BACKGROUND_IMAGE = pygame.image.load('background.png')
+    GROUND_IMAGE = pygame.image.load('platform.png')

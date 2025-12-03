@@ -55,9 +55,10 @@ class Player(Entity):
                 terminate()
 
     def update(self, ground_group, platform_group):
-       for event in pygame.event.get():
+        for event in pygame.event.get():
             self.handle_input(event, ground_group, platform_group)
         # Set the initial acceleration to (0,0)
+        
         self.acceleration = self.vector(0,self.VERTICAL_ACCELERATION)
 
         if self.move_left:
@@ -85,7 +86,7 @@ class Player(Entity):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
         if touched_platforms:
             if self.velocity.y > 0:
-                self.position.y = touched_platforms[0].rect.top
+                self.position.y = touched_platforms[0].rect.top + 2 * settings.PLATFORM_SPEED
                 self.velocity.y = 0
 
     def check_ground_collision(self, ground_group):
@@ -97,7 +98,7 @@ class Player(Entity):
     def check_for_screen_border_collision(self):
         if self.position.x <= 0:
             self.position.x = 0
-        if self.position.x + self.player_size >= settings.WINDOW_WIDTH:
+        if self.position.x + self.size >= settings.WINDOW_WIDTH:
             self.position.x = settings.WINDOW_WIDTH - self.player_size
 
     def player_jump(self, ground_group, platform_group):
@@ -138,3 +139,9 @@ class Platform(Entity):
         self.rect.y += settings.PLATFORM_SPEED
         if self.rect.top > settings.WINDOW_HEIGHT:
             self.kill()
+
+class Ground(pygame.sprite.Sprite):
+    def __init__(self, image):
+        super().__init__()
+        self.image = pygame.transform.scale(image, (settings.WINDOW_WIDTH, 10))
+        self.rect = self.image.get_rect(bottomleft = (0, settings.WINDOW_HEIGHT))
