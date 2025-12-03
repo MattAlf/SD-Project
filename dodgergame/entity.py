@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from functions import * 
+from functions import *
 import random
 
 class Entity(pygame.sprite.Sprite):
@@ -12,7 +12,7 @@ class Entity(pygame.sprite.Sprite):
 
 class Player(Entity):
     def __init__(self, x ,y):
-        image = pygame.image.load('player.png') 
+        image = settings.PLAYER_IMAGE
         super().__init__(image, x, y)
 
         self.size = settings.PLAYER_SIZE
@@ -26,6 +26,7 @@ class Player(Entity):
         self.move_left = False
         self.move_right = False
         self.on_ground = False
+        self.on_a_platform = False 
 
     def handle_input(self, event):
         if event.type == QUIT:
@@ -50,16 +51,28 @@ class Player(Entity):
                 terminate()
 
     def update(self, platform_group):
-        # Gravity
-        if not self.on_ground:
-            self.vel_y += self.gravity
-
-        # Vertical movement
+        # Gravity  
+        self.vel_y += settings.PLAYER_GRAVITY 
         self.rect.y += self.vel_y
 
-        # PLATFORM collision using sprite collision
-        self.check_platform_collisions(platform_group)
-        self.check_ground_collision()
+        if self.rect.bottom >= settings.WINDOW_HEIGHT:
+            self.rect.bottom = settings.WINDOW_HEIGHT
+            self.on_ground = True 
+            self.vel_y = 0 
+            self.on_a_platform = False 
+
+        for plateform in platform_group:
+            if self.vel_y >= 0 and pygame.sprite.collide_rect(self, plateform):
+                self.on_ground = True 
+                self.vel_y = settings.PLATFORM_SPEED
+                self.on_a_platform = True 
+                self.rect.bottom = plateform.rect.top 
+            else: 
+                self.on_a_platform = False 
+        
+            
+        
+
 
         # Horizontal movement
         if self.move_left and self.rect.left > 0:
@@ -67,27 +80,12 @@ class Player(Entity):
         if self.move_right and self.rect.right < settings.WINDOW_WIDTH:
             self.rect.x += self.speed
 
-    def check_platform_collisions(self, platform_group):
-        hits = pygame.sprite.spritecollide(self, platform_group, False)
-        for p in hits:
-            if self.rect.colliderect(p.rect):
 
-                # Only collide when falling
-                if self.vel_y >= 0 and self.rect.bottom <= p.rect.bottom:
-                    self.rect.bottom = p.rect.top
-                    self.vel_y = 0
-                    self.on_ground = True
-
-    def check_ground_collision(self):
-        if self.rect.bottom >= settings.WINDOW_HEIGHT:
-            self.rect.bottom = settings.WINDOW_HEIGHT
-            self.vel_y = 0
-            self.on_ground = True
 
 
 class Baddies(Entity):
     def __init__ (self, x, y):
-        image = pygame.image.load('baddie.png')
+        image = settings.BADDIE_IMAGE
         self.size = random.randint(settings.BADDIE_MIN_SIZE, settings.BADDIE_MAX_SIZE)
         x = random.randint(0, settings.WINDOW_WIDTH - self.size)
         y = 0 - self.size
@@ -101,3 +99,19 @@ class Baddies(Entity):
         self.rect.y += self.speed
         if self.rect.top > settings.WINDOW_HEIGHT:
             self.kill() 
+
+class Platform(Entity):
+    def __init__ (self, x , y):
+        image = settings.PLATFORM_IMAGE
+        self.height = settings.PLATFORM_HEIGHT
+        self.width = settings.PLATFORM_WIDTH
+        x = random.randint(0, settings.WINDOW_WIDTH - self.width)
+        y = random.randint (0, settings.WINDOW_HEIGHT - self.height)
+        super().__init__(image, x, y)
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        self.rect = self.image.get_rect(topleft=(x,y))
+
+    def update(self):
+        self.rect.y += settings.PLATFORM_SPEED
+        if self.rect.top > settings.WINDOW_HEIGHT:
+            self.kill()

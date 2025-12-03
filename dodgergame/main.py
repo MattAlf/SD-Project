@@ -23,15 +23,10 @@ font = pygame.font.SysFont(None, 48)
 game_over_sound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
-PLAYER_IMAGE = pygame.image.load('player.png')
-BADDIE_IMAGE = pygame.image.load('baddie.png')
-PLATFORM_IMAGE = pygame.image.load('platform.png')
-BACKGROUND_IMAGE = pygame.image.load('background.png')
-
 # Show the "Start" screen.
 background_group = pygame.sprite.Group()
-background_group.add(Background(settings, BACKGROUND_IMAGE, 0))
-background_group.add(Background(settings, BACKGROUND_IMAGE, 0 - settings.WINDOW_HEIGHT))
+background_group.add(Background(settings, settings.BACKGROUND_IMAGE, 0))
+background_group.add(Background(settings, settings.BACKGROUND_IMAGE, 0 - settings.WINDOW_HEIGHT))
 background_group.draw(window_surface)
 draw_text('Dodger', font, window_surface, settings.WINDOW_WIDTH // 3, settings.WINDOW_HEIGHT // 3)
 draw_text('Press a key to start.', font, window_surface, settings.WINDOW_WIDTH // 3, (settings.WINDOW_HEIGHT // 3) + 50)
@@ -49,9 +44,10 @@ while True:
     player_group.draw(window_surface)
     score = 0
     baddie_add_counter = 0
+    platform_add_counter = 0
     pygame.mixer.music.play(-1, 0.0)
 
-    platform_group.add(MyPlatform(settings, score, PLATFORM_IMAGE))
+    platform_group.add(MyPlatform(settings, score, settings.PLATFORM_IMAGE))
     
 
     # Second game loop
@@ -66,11 +62,18 @@ while True:
         baddie_add_counter += 1
         if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
             baddie_add_counter = 0
-            baddie_group.add(Baddies(settings, BADDIE_IMAGE))
+            baddie_group.add(Baddies(settings, settings.BADDIE_IMAGE))
+
+        # Add new platform 
+        platform_add_counter += 1
+        if platform_add_counter >= settings.ADD_NEW_PLATFORM_RATE:
+            platform_add_counter = 0
+            platform_group.add(Platform(settings, settings.PLATFORM_IMAGE))
 
         # Update game objects
         player.update(platform_group)
         baddie_group.update()
+        platform_group.update()
         background_group.update()
 
         # Draw everything
