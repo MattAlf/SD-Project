@@ -8,6 +8,7 @@ from player import Player
 from baddie import Baddie
 from myplatform import MyPlatform
 from background import Background
+from ground import Ground
 
 
 # Initialize Pygame
@@ -28,12 +29,16 @@ PLAYER_IMAGE = pygame.image.load('player.png')
 BADDIE_IMAGE = pygame.image.load('baddie.png')
 PLATFORM_IMAGE = pygame.image.load('platform.png')
 BACKGROUND_IMAGE = pygame.image.load('background.png')
+GROUND_IMAGE = pygame.image.load('platform.png')
 
 # Show the "Start" screen.
 background_group = pygame.sprite.Group()
 background_group.add(Background(settings, BACKGROUND_IMAGE, 0))
 background_group.add(Background(settings, BACKGROUND_IMAGE, 0 - settings.WINDOW_HEIGHT))
 background_group.draw(window_surface)
+ground_group = pygame.sprite.Group()
+ground_group.add(Ground(settings, GROUND_IMAGE))
+ground_group.draw(window_surface)
 draw_text('Dodger', font, window_surface, settings.WINDOW_WIDTH // 3, settings.WINDOW_HEIGHT // 3)
 draw_text('Press a key to start.', font, window_surface, settings.WINDOW_WIDTH // 3, (settings.WINDOW_HEIGHT // 3) + 50)
 pygame.display.update()
@@ -59,18 +64,14 @@ while True:
     while True:
         score += 1
 
-        # Event handling
-        for event in pygame.event.get():
-            player.handle_input(event)
-
         # Add new baddies
         baddie_add_counter += 1
-        if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
-            baddie_add_counter = 0
-            baddie_group.add(Baddie(settings, BADDIE_IMAGE))
+ #       if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
+  #          baddie_add_counter = 0
+   #         baddie_group.add(Baddie(settings, BADDIE_IMAGE))
 
         # Update game objects
-        player.update(platform_group)
+        player.update(ground_group, platform_group)
         baddie_group.update()
         background_group.update()
 
@@ -80,6 +81,7 @@ while True:
         player_group.draw(window_surface)
         baddie_group.draw(window_surface)
         platform_group.draw(window_surface)
+        ground_group.draw(window_surface)
 
 
         # Update display inside the game
