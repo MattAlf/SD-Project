@@ -77,7 +77,7 @@ class Player(pygame.sprite.Sprite):
     def check_platform_collisions(self, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
         if touched_platforms:
-            if self.velocity.y > 0:
+            if self.velocity.y > 0 and self.rect.bottom < touched_platforms[0].rect.bottom:
                 self.position.y = touched_platforms[0].rect.top
                 self.velocity.y = 0
 
@@ -94,5 +94,9 @@ class Player(pygame.sprite.Sprite):
             self.position.x = settings.WINDOW_WIDTH - self.player_size
 
     def player_jump(self, ground_group, platform_group):
-        if pygame.sprite.spritecollide(self, ground_group, False) or pygame.sprite.spritecollide(self, platform_group, False):
+        touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
+        touched_ground = pygame.sprite.spritecollide(self, ground_group, False)
+        if touched_ground and self.rect.bottom <= touched_ground[0].rect.top + 1:
+            self.velocity.y = -1 * self.PLAYER_JUMP_STRENGHT
+        if touched_platforms and self.rect.bottom <= touched_platforms[0].rect.top + 1:
             self.velocity.y = -1 * self.PLAYER_JUMP_STRENGHT
