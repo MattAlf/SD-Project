@@ -122,15 +122,15 @@ class Baddies(Entity):
         super().__init__(image, self.size, self.size)
 
         # Set the Baddie's position randomly
-        self.rect.left = random.randint(0, settings.WINDOW_WIDTH - self.size)
-        self.rect.bottom = 0
+        self.rect.left = settings.WINDOW_WIDTH
+        self.rect.bottom = random.randint(0, settings.WINDOW_HEIGHT - self.size)
 
         # Set the Baddie's speed randomly
         self.speed = random.randint(settings.BADDIE_MIN_SPEED, settings.BADDIE_MAX_SPEED)
 
     def update(self):
-        self.rect.y += self.speed
-        if self.rect.top > settings.WINDOW_HEIGHT:
+        self.rect.x -= self.speed
+        if self.rect.right < 0:
             self.kill()
 
 class Platform(Entity):
@@ -140,11 +140,12 @@ class Platform(Entity):
         self.width = settings.PLATFORM_WIDTH
         super().__init__(image, self.width, self.height)
 
-        self.rect.left = random.randint(0, settings.WINDOW_WIDTH - self.width)
+        self.rect.left = settings.WINDOW_WIDTH
         self.rect.top = random.randint(0, settings.WINDOW_HEIGHT - self.height)
 
     def update(self):
-        if self.rect.top > settings.WINDOW_HEIGHT:
+        self.rect.x -= settings.PLATFORM_SPEED
+        if self.rect.right < 0:
             self.kill()
 
 class Ground(Entity):
@@ -170,9 +171,9 @@ class Background(Entity):
 
     def update(self):
         # Move the background image down
-        self.rect.y += self.speed
+        self.rect.x -= self.speed
         
         # If the image has scrolled entirely off the bottom of the screen,
         # reset its position to be directly above the screen (for seamless looping).
-        if self.rect.top >= settings.WINDOW_HEIGHT:
-            self.rect.top = -settings.WINDOW_HEIGHT
+        if self.rect.right <= 0:
+            self.rect.left = settings.WINDOW_WIDTH

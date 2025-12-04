@@ -25,7 +25,7 @@ pygame.mixer.music.load('background.mid')
 # Show the "Start" screen.
 background_group = pygame.sprite.Group()
 background_group.add(Background(0, 0))
-background_group.add(Background(0, 0 - settings.WINDOW_HEIGHT))
+background_group.add(Background(settings.WINDOW_WIDTH, 0))
 background_group.draw(window_surface)
 ground_group = pygame.sprite.Group()
 ground_group.add(Ground())
@@ -57,7 +57,7 @@ while True:
         baddie_add_counter += 1
         if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
             baddie_add_counter = 0
- #           baddie_group.add(Baddies())
+            baddie_group.add(Baddies())
 
         # Add new platform 
         platform_add_counter += 1
