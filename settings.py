@@ -2,7 +2,7 @@ import pygame
 
 # settingspy
 class Settings:
-     # Window
+    # Window
     WINDOW_WIDTH = 600
     WINDOW_HEIGHT = 600
     FPS = 60
@@ -13,6 +13,9 @@ class Settings:
 
     # Background
     BACKGROUND_SCROLL_SPEED = 1
+
+    # Ground
+    GROUND_HEIGHT = 10
         
     # Player
     PLAYER_SIZE = 40
@@ -34,7 +37,7 @@ class Settings:
     PLATFORM_SPEED = BACKGROUND_SCROLL_SPEED
     ADD_NEW_PLATFORM_RATE = 20
 
-    #Images 
+    # Images 
     PLAYER_IMAGE = pygame.image.load('player.png')
     BADDIE_IMAGE = pygame.image.load('baddie.png')
     PLATFORM_IMAGE = pygame.image.load('platform.png')
