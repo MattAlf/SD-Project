@@ -11,20 +11,35 @@ class Entity(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, window_surface, PLAYER_IMAGES):
+    def __init__(self, PLAYER_IMAGES):
         super().__init__()
         self.current_image_index = 0
         self.player_images = PLAYER_IMAGES
-        self.window_surface = window_surface
-        self.image = pygame.transform.scale_by(self.player_images['PLAYER_IDLE_RIGHT'][0], settings.PLAYER_SIZE_SCALING_FACTOR)
-        self.mask = pygame.mask.from_surface(self.image)
-        
-       # self.rect = self.image.get_rect()
-        #self.width = settings.PLAYER_SIZE_SCALING_FACTOR * settings.PLAYER_ORIGINAL_WIDTH
-        #self.height = settings.PLAYER_SIZE_SCALING_FACTOR * settings.PLAYER_ORIGINAL_HEIGHT
-   #     self.rect.width = self.width + 100
-    #    self.rect.height = self.height
-  #      self.rect.midbottom = (settings.WINDOW_WIDTH // 2, settings.WINDOW_HEIGHT - settings.PLATFORM_HEIGHT)
+
+        target_height = settings.PLAYER_HEIGHT
+
+        original_image = self.player_images['PLAYER_IDLE_RIGHT'][0]
+        original_width = original_image.get_width()
+        original_height = original_image.get_height()
+
+        scale_factor = target_height / original_height
+        self.draw_height = target_height
+        self.draw_width = int(original_width * scale_factor)
+
+        self.image = pygame.transform.scale(original_image, (self.draw_width, self.draw_height))
+
+        hitbox_width = int(self.draw_width * 0.17)  
+        hitbox_height = int(self.draw_height * 0.50)
+
+        self.HITBOX_X_OFFSET = int(self.draw_width * 0.42)
+        self.HITBOX_Y_OFFSET = int(self.draw_height * 0.33)
+
+        self.rect = pygame.Rect(0, 0, hitbox_width, hitbox_height)
+
+        self.rect.bottomleft = (0, settings.WINDOW_HEIGHT - settings.PLATFORM_HEIGHT)
+
+        self.full_image_rect = self.image.get_rect()
+        self.full_image_rect.bottomleft = (self.rect.left - self.HITBOX_X_OFFSET, self.rect.bottom + self.HITBOX_Y_OFFSET)
 
         # Kinematic vectors (x,y)
         self.position = pygame.math.Vector2(self.rect.left, self.rect.bottom)
@@ -38,6 +53,9 @@ class Player(pygame.sprite.Sprite):
         
         self.run_left = False
         self.run_right = False
+        self.in_a_jump = False
+        self.on_ground = True
+        self.on_platform = False
 
     def handle_input(self, ground_group, platform_group):
         for event in pygame.event.get():
@@ -49,14 +67,11 @@ class Player(pygame.sprite.Sprite):
                     self.run_left = True
                 if event.key in (K_RIGHT, K_d):
                     self.run_right = True
-                if event.key in (K_UP, K_w, K_SPACE):
+                if event.key in (K_UP, K_w, K_SPACE) and (self.on_ground or self.on_platform):
                     self.player_jump(ground_group, platform_group)
-
-     #           else:
-       #                 self.animate(self.player_images['PLAYER_IDLE_RIGHT'], settings.PLAYER_ANIMATION_SPEED)
-      #              if self.velocity.x > 0:
-        #            else:
-         #               self.animate(self.player_images['PLAYER_IDLE_LEFT'], settings.PLAYER_ANIMATION_SPEED)
+                    self.on_ground = False
+                    self.on_platform = False
+                    self.in_a_jump = True
             
             if event.type == KEYUP:
                 if event.key in (K_LEFT, K_a):
@@ -76,12 +91,26 @@ class Player(pygame.sprite.Sprite):
         self.acceleration = pygame.math.Vector2(0, self.VERTICAL_ACCELERATION)
 
         # Update the horizontal acceleration of the player according to the inputs
-        if self.run_left:
-            self.acceleration.x = -1 * self.HORIZONTAL_ACCELERATION
-            self.animate(self.player_images['PLAYER_RUN_LEFT'], settings.PLAYER_ANIMATION_SPEED)
-        if self.run_right:
-            self.acceleration.x = self.HORIZONTAL_ACCELERATION
-            self.animate(self.player_images['PLAYER_RUN_RIGHT'], settings.PLAYER_ANIMATION_SPEED)
+        
+        if self.in_a_jump and not self.on_ground and not self.on_platform:
+            if self.velocity.x > 0:
+                self.animate(self.player_images['PLAYER_JUMP_RIGHT'], settings.PLAYER_ANIMATION_SPEED)
+                print('JUMPRIGHT')
+            else:
+                self.animate(self.player_images['PLAYER_JUMP_LEFT'], settings.PLAYER_ANIMATION_SPEED)
+                print('JUMPLEFT')
+        elif self.run_left or self.run_right:
+            if self.run_left:
+                self.acceleration.x = -1 * self.HORIZONTAL_ACCELERATION
+                self.animate(self.player_images['PLAYER_RUN_LEFT'], settings.PLAYER_ANIMATION_SPEED)
+            if self.run_right:
+                self.acceleration.x = self.HORIZONTAL_ACCELERATION
+                self.animate(self.player_images['PLAYER_RUN_RIGHT'], settings.PLAYER_ANIMATION_SPEED)
+        else:
+            if self.velocity.x > 0:
+                self.animate(self.player_images['PLAYER_IDLE_RIGHT'], settings.PLAYER_ANIMATION_SPEED)
+            else:
+                self.animate(self.player_images['PLAYER_IDLE_LEFT'], settings.PLAYER_ANIMATION_SPEED)
 
         # Calculate the new kinematics
         self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
@@ -93,6 +122,7 @@ class Player(pygame.sprite.Sprite):
 
         # Update the player's rectangle position
         self.rect.bottomleft = self.position
+        self.full_image_rect.bottomleft = (self.rect.left - self.HITBOX_X_OFFSET, self.rect.bottom + self.HITBOX_Y_OFFSET)
 
         # Check for collisions with the ground and the platforms. We have to put it after we
         # update the player's rectangle so that the jumping mechanics work.
@@ -105,18 +135,20 @@ class Player(pygame.sprite.Sprite):
             if self.velocity.y > 0 and self.rect.bottom < touched_platforms[0].rect.bottom:
                 self.position.y = touched_platforms[0].rect.top
                 self.velocity.y = 0
+                self.on_platform = True
 
     def check_ground_collision(self, ground_group):
         touched_ground = pygame.sprite.spritecollide(self, ground_group, False)
         if touched_ground:
             self.position.y = touched_ground[0].rect.top
             self.velocity.y = 0
+            self.on_ground = True
 
     def check_for_screen_border_collision(self):
         if self.position.x <= 0:
             self.position.x = 0
-        if self.position.x + self.width >= settings.WINDOW_WIDTH:
-            self.position.x = settings.WINDOW_WIDTH - self.width
+        if self.position.x + self.rect.width >= settings.WINDOW_WIDTH:
+            self.position.x = settings.WINDOW_WIDTH - self.rect.width
 
     # We only allow the player to jump when he collides a platform or the ground.
     # But we have to specify that the jumps is enabled only when the player is over the object.
@@ -124,28 +156,21 @@ class Player(pygame.sprite.Sprite):
     def player_jump(self, ground_group, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
         touched_ground = pygame.sprite.spritecollide(self, ground_group, False)
+        consition_1 = touched_platforms and self.rect.bottom <= touched_platforms[0].rect.top + settings.PLATFORM_HEIGHT // 2
+        condition_2 = touched_ground and self.rect.bottom <= touched_ground[0].rect.top + settings.GROUND_HEIGHT // 2
 
         # The player needs to collide with the object and the player's bottom needs to be at least
         # half the object's height over the objeect (to avoid jumping bugs).
-        if touched_ground and self.rect.bottom <= touched_ground[0].rect.top + settings.GROUND_HEIGHT // 2:
+        if consition_1 or condition_2:
             self.velocity.y = -1 * self.PLAYER_JUMP_STRENGTH
-            if self.velocity.x > 0:
-                self.animate(self.player_images['PLAYER_JUMP_RIGHT'], settings.PLAYER_ANIMATION_SPEED)
-            else:
-                self.animate(self.player_images['PLAYER_JUMP_LEFT'], settings.PLAYER_ANIMATION_SPEED)
-        if touched_platforms and self.rect.bottom <= touched_platforms[0].rect.top + settings.PLATFORM_HEIGHT // 2:
-            self.velocity.y = -1 * self.PLAYER_JUMP_STRENGTH
-            if self.velocity.x > 0:
-                self.animate(self.player_images['PLAYER_JUMP_RIGHT'], settings.PLAYER_ANIMATION_SPEED)
-            else:
-                self.animate(self.player_images['PLAYER_JUMP_LEFT'], settings.PLAYER_ANIMATION_SPEED)
     
     def animate(self, list_of_images, animation_speed):
         if self.current_image_index < len(list_of_images) - 1:
             self.current_image_index += 1
         else:
             self.current_image_index = 0
-        self.image = pygame.transform.scale_by(list_of_images[self.current_image_index], settings.PLAYER_SIZE_SCALING_FACTOR)
+        raw_image = list_of_images[self.current_image_index]
+        self.image = pygame.transform.scale(raw_image, (self.draw_width, self.draw_height))
 
 class Baddies(Entity):
     def __init__ (self, BADDIE_IMAGE):

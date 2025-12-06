@@ -122,7 +122,7 @@ wait_for_player_to_press_key()
 # First game loop
 while True:
     # Start a new game
-    player = Player(window_surface, PLAYER_IMAGES)
+    player = Player(PLAYER_IMAGES)
     player_group = pygame.sprite.GroupSingle(player)
     baddie_group = pygame.sprite.Group()
     platform_group = pygame.sprite.Group()
@@ -157,7 +157,7 @@ while True:
         # Draw everything
         background_group.draw(window_surface)
         draw_text('Score: %s' % (score), font, window_surface, 10, 0)
-        player_group.draw(window_surface)
+        window_surface.blit(player.image, player.full_image_rect)
         pygame.draw.rect(window_surface, settings.BACKGROUND_COLOR, player.rect, 1)
         baddie_group.draw(window_surface)
         platform_group.draw(window_surface)

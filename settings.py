@@ -18,12 +18,13 @@ class Settings:
     # parallax effect in the same proportions. (To avoid bugs don't go below 0.6)
     BACKGROUND_SCROLL_SPEED_MULTIPLICATOR = 0.7
         
-    # Player (720 width, 512 height, 12.8 ratio)
-    PLAYER_SIZE_SCALING_FACTOR = 1 / 2.5
-    PLAYER_ORIGINAL_WIDTH = 360
-    PLAYER_ORIGINAL_HEIGHT = 512
-    PLAYER_HEIGHT = 40
-    PLAYER_WIDTH = 56
+    # Player (720 width, 512 height, 12.8 ratio)(image is 1800 par 1000)
+    #PLAYER_ORIGINAL_WIDTH = 360
+    #PLAYER_ORIGINAL_HEIGHT = 512
+    #PLAYER_HEIGHT = 40
+    #PLAYER_WIDTH = 56
+
+    PLAYER_HEIGHT = 300
     PLAYER_JUMP_STRENGTH = 20 # How high the player can jump
     PLAYER_ANIMATION_SPEED = 2
 
