@@ -19,7 +19,11 @@ font = pygame.font.SysFont(None, 48)
 BADDIE_IMAGE = pygame.image.load('baddie.png').convert_alpha()
 PLATFORM_IMAGE = pygame.image.load('platform.png').convert_alpha()
 GROUND_IMAGE = pygame.image.load('platform.png').convert_alpha()
+SPEAR_IMAGE = pygame.image.load('spear.png').convert_alpha()
 
+# The player is animated. So in order to store all of the different animations we created a dictionary.
+# Each key gives acces to the list with all of the images related to this action. We also had to flip the images
+# to have an animation whether the player is facing right or left.
 PLAYER_IMAGES = {
     'PLAYER_RUN_RIGHT' : [],
     'PLAYER_RUN_LEFT' : [],
@@ -124,6 +128,7 @@ while True:
     # Start a new game
     player = Player(PLAYER_IMAGES)
     player_group = pygame.sprite.GroupSingle(player)
+    spear_group = pygame.sprite.Group()
     baddie_group = pygame.sprite.Group()
     platform_group = pygame.sprite.Group()
     player_group.draw(window_surface)
@@ -150,17 +155,18 @@ while True:
 
         # Update game objects
         platform_group.update()
-        player_group.update(ground_group, platform_group)
+        player_group.update(ground_group, platform_group, spear_group, SPEAR_IMAGE)
         baddie_group.update()
+        spear_group.update()
         background_group.update()
 
         # Draw everything
         background_group.draw(window_surface)
         draw_text('Score: %s' % (score), font, window_surface, 10, 0)
         window_surface.blit(player.image, player.full_image_rect)
-        pygame.draw.rect(window_surface, settings.BACKGROUND_COLOR, player.rect, 1)
         baddie_group.draw(window_surface)
         platform_group.draw(window_surface)
+        spear_group.draw(window_surface)
         ground_group.draw(window_surface)
  #       grass_group.draw(window_surface)
 

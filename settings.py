@@ -17,16 +17,19 @@ class Settings:
     # Background scroll speed multiplicator. It will speed up the background scrolling speed while keeping the
     # parallax effect in the same proportions. (To avoid bugs don't go below 0.6)
     BACKGROUND_SCROLL_SPEED_MULTIPLICATOR = 0.7
-        
-    # Player (720 width, 512 height, 12.8 ratio)(image is 1800 par 1000)
-    #PLAYER_ORIGINAL_WIDTH = 360
-    #PLAYER_ORIGINAL_HEIGHT = 512
-    #PLAYER_HEIGHT = 40
-    #PLAYER_WIDTH = 56
 
-    PLAYER_HEIGHT = 300
-    PLAYER_JUMP_STRENGTH = 20 # How high the player can jump
-    PLAYER_ANIMATION_SPEED = 2
+    PLAYER_HEIGHT = 200 # The number to change to manipulate the player's size.
+    PLAYER_HITBOX_IMAGE_WIDTH_FACTOR = 0.17 # ~ 300 pixels wide (original image, the width of the knight without the spear) / 1800 pixels wide (original image, the whole image)
+    PLAYER_HITBOX_IMAGE_HEIGHT_FACTOR = 0.50 # ~ 500 pixels high (original image, the height of the knight) / 1000 pixels high (original image, the whole image)
+    PLAYER_HITBOX_X_OFFSET_FACTOR = 0.42 # ~ 800 pixels horizontal distance (original image, from the left side of the image to the knight) / 1800 pixels wide (original image, the whole image)
+    PLAYER_HITBOX_Y_OFFSET_FACTOR = 0.33 # ~ 300 pixels vertical distance (original image, from the bottom of the image to the knight) / 1000 pixels high (original image, the whole image)
+    PLAYER_JUMP_STRENGTH = 20 # How high the player can jump.
+    PLAYER_ANIMATION_SLOWER = 2 # The higher the number, the slower the player animation speed.
+
+    # Spear
+    SPEAR_WIDTH = 100
+    SPEAR_SPEED = 20
+    SPEAR_ATTACK_COOLDOWN = 500
 
     HORIZONTAL_ACCELERATION = 2 # How quickly the player speeds up
     HORIZONTAL_FRICTION = 0.2 # Friction
