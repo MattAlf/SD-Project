@@ -225,6 +225,7 @@ class Player(pygame.sprite.Sprite):
                 current_direction = -1
                 self.attack_left = True
             # We set the starting position of the spear at the center of the player's hitbox.
+            # (here we only store the center of the player's hitbox)
             start_x = self.rect.centerx
             start_y = self.rect.centery
             # Here we create the new spear and add it to the spear_group.
@@ -252,6 +253,7 @@ class Player(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, position_x, position_y, direction, SPEAR_IMAGE):
         super().__init__()
+        # It's the same process as for the player's image.
         original_image = SPEAR_IMAGE
         target_width = settings.SPEAR_WIDTH
 
@@ -262,24 +264,22 @@ class Bullet(pygame.sprite.Sprite):
         self.draw_width = target_width
         self.draw_height = int(original_height * scale_factor)            
         
-        # Charger et redimensionner l'image de la balle
         self.image = pygame.transform.scale(original_image, (self.draw_width, self.draw_height))
+        # Here if the direction is -1 (meaning the player faces to the left) we have to
+        # flip the spear's image.
         if direction == -1:
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
-        
-        # Positionner la balle au départ (par exemple, au centre du joueur)
+        # We set the spear at the center of the player's hitbox.
         self.rect.center = (position_x, position_y)
-        
-        # Vitesse et direction (si direction est -1 pour gauche et 1 pour droite)
+        # We store the spear's speed and direction
         self.speed = settings.SPEAR_SPEED
         self.direction = direction
 
     def update(self):
-        # Déplacer la balle horizontalement
+        # Here we move the spear at each update.
         self.rect.x += self.speed * self.direction
-        
-        # Tuer la balle si elle sort de l'écran
+        # If the spear is out of the window screen we remove it from the spear_group.        
         if self.rect.right < 0 or self.rect.left > settings.WINDOW_WIDTH:
             self.kill()
 
