@@ -2,9 +2,7 @@
 import pygame
 import sys
 from pygame.locals import *
-from settings import Settings
-
-settings = Settings()
+from settings import settings
 
 def draw_text(text, font, surface, x, y, color=(0, 0, 122)):
     text_surface = font.render(text, True, color)
