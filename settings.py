@@ -12,7 +12,9 @@ class Settings:
     BACKGROUND_COLOR = (255, 255, 255)
 
     # Ground
-    GROUND_HEIGHT = 10
+    GROUND_HEIGHT = 60
+    # Original image height = 100 pixels | ground height = 65 pixels | 
+    GROUND_HITBOX_IMAGE_HEIGHT_FACTOR = 0.70 # 70 pixels high (original image, height of the ground) / 100 pixels (original image height)
 
     # Background scroll speed multiplicator. It will speed up the background scrolling speed while keeping the
     # parallax effect in the same proportions. (To avoid bugs don't go below 0.6)

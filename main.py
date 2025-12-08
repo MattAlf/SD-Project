@@ -5,6 +5,8 @@ from pygame.locals import *
 from settings import *
 from functions import *
 from entity import *
+from entity import Ground
+
 
 # Initialize Pygame.
 pygame.init()
@@ -18,7 +20,6 @@ font = pygame.font.SysFont(None, 48)
 # Game related images. The images are converted so that the computer can draw more efficiently.
 BADDIE_IMAGE = pygame.image.load('baddie.png').convert_alpha()
 PLATFORM_IMAGE = pygame.image.load('platform.png').convert_alpha()
-GROUND_IMAGE = pygame.image.load('platform.png').convert_alpha()
 SPEAR_IMAGE = pygame.image.load('spear.png').convert_alpha()
 
 # The player is animated. So in order to store all of the different animations we created a dictionary.
@@ -77,13 +78,13 @@ BACKGROUND_IMAGES_AND_SPEEDS = [
     (pygame.image.load('background_layers/2_clouds.png').convert_alpha(), 2 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
     (pygame.image.load('background_layers/3_mountain.png').convert_alpha(), settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
     (pygame.image.load('background_layers/4_clouds.png').convert_alpha(), 3 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-    (pygame.image.load('background_layers/5_ground.png').convert_alpha(), 3 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-    (pygame.image.load('background_layers/6_ground.png').convert_alpha(), 5 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+    (pygame.image.load('background_layers/5_ground.png').convert_alpha(), 4 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+    (pygame.image.load('background_layers/6_ground.png').convert_alpha(), 7 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
     (pygame.image.load('background_layers/7_ground.png').convert_alpha(), 8 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
     (pygame.image.load('background_layers/8_plant.png').convert_alpha(), 8 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
     ]
-# Grass image. It is drawn separately because it will be drawn in the foreground.
-GRASS_IMAGE_AND_SPEED = (pygame.image.load('background_layers/grass.png').convert_alpha(), 10 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
+# Ground image. It is drawn separately because it will be drawn in the foreground.
+GROUND_IMAGE_AND_SPEED = (pygame.image.load('background_layers/ground1.png').convert_alpha(), 10 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
 # Set up sounds.
 game_over_sound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
@@ -103,22 +104,25 @@ for image, scrolling_speed in BACKGROUND_IMAGES_AND_SPEEDS:
     background_group.add(Background(image, scrolling_speed, 2 * settings.WINDOW_WIDTH, 0))
 # Draws the background on the window surface.
 background_group.draw(window_surface)
-grass_group = pygame.sprite.Group()
-# Draws the grass in the foreground. It will be useful to store it in a separate group because we will draw th player between
-# the background and the grass.
-grass_group.add(Background(GRASS_IMAGE_AND_SPEED[0],GRASS_IMAGE_AND_SPEED[1], 0, 0))
-grass_group.add(Background(GRASS_IMAGE_AND_SPEED[0],GRASS_IMAGE_AND_SPEED[1], settings.WINDOW_WIDTH, 0))
-grass_group.add(Background(GRASS_IMAGE_AND_SPEED[0],GRASS_IMAGE_AND_SPEED[1], 2 * settings.WINDOW_WIDTH, 0))
-#grass_group.draw(window_surface)
-# Creates the group that will hold the ground object, creates the ground object, draws it on the window surface.
 ground_group = pygame.sprite.Group()
-ground_group.add(Ground(GROUND_IMAGE))
+# Draws the ground in the foreground. It will be useful to store it in a separate group because we will draw th player between
+# the background and the ground.
+test_ground = Ground(GROUND_IMAGE_AND_SPEED[0], 0, 0, 0)
+for index in range(0,6):
+    ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], index * test_ground.draw_width, settings.WINDOW_HEIGHT))
+
+ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], 0, settings.WINDOW_HEIGHT))
+ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
+ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], 2 * settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
+
 ground_group.draw(window_surface)
 # Draws the text on the starting screen.
 draw_text('Dodger', font, window_surface, settings.WINDOW_WIDTH // 3, settings.WINDOW_HEIGHT // 3)
 draw_text('Press a key to start.', font, window_surface, settings.WINDOW_WIDTH // 3, (settings.WINDOW_HEIGHT // 3) + 50)
 # Updates the window surface so that the player sees what has been drawn until now.
 pygame.display.update()
+print(len(background_group.sprites()))
+
 # Wait for the player to press a key to start.
 wait_for_player_to_press_key()
 
@@ -135,7 +139,7 @@ while True:
     score = 0
     baddie_add_counter = 0
     platform_add_counter = 0
-    pygame.mixer.music.play(-1, 0.0)    
+    pygame.mixer.music.play(-1, 0.0)
 
     # Second game loop
     while True:
@@ -159,6 +163,7 @@ while True:
         baddie_group.update()
         spear_group.update()
         background_group.update()
+        ground_group.update()
 
         # Draw everything
         background_group.draw(window_surface)
@@ -167,8 +172,9 @@ while True:
         baddie_group.draw(window_surface)
         platform_group.draw(window_surface)
         spear_group.draw(window_surface)
-        ground_group.draw(window_surface)
- #       grass_group.draw(window_surface)
+  #      ground_group.draw(window_surface)
+        for ground in ground_group:
+            window_surface.blit(ground.image, ground.full_image_rect)
 
         # Update display inside the game
         pygame.display.update()
