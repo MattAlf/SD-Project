@@ -173,6 +173,10 @@ class Player(pygame.sprite.Sprite):
         self.check_platform_collisions(platform_group)
         self.check_ground_collision(ground_group)
         
+        # Checks if the shield effect is over and needs to be disabled.
+        if self.has_shield and self.current_time > self.shield_timer:
+            self.has_shield = False
+        
         # Checks if the invulnerability effect is over and needs to be disabled. Also it makes the invulnerability effect
         # visible by making the player image flash.
         if self.is_invulnerable:
@@ -335,11 +339,14 @@ class Spear(pygame.sprite.Sprite):
         self.speed = settings.SPEAR_SPEED
         self.direction = direction
 
-    def update(self):
+    def update(self, baddie_group):
         # Here we move the spear at each update.
         self.rect.x += self.speed * self.direction
         # If the spear is out of the window screen we remove it from the spear_group.        
         if self.rect.right < 0 or self.rect.left > settings.WINDOW_WIDTH:
+            self.kill()
+        # If the spear touches an enemy, it kills the enemy and disappears.
+        if pygame.sprite.spritecollide(self, baddie_group, True):
             self.kill()
 
 class ShieldPickup(pygame.sprite.Sprite):
@@ -371,9 +378,8 @@ class ShieldEffect(pygame.sprite.Sprite):
     def update(self):
         # The shield follows the player's position.
         self.rect.center = self.player.rect.center
-        # Checks if the shield effect is over and needs to be disabled.
-        if player.has_shield and player.current_time > player.shield_timer:
-            player.has_shield = False
+        # If the player has no shield anymore, the shield is deleted from te shield_group.
+        if not self.player.has_shield:
             self.kill()
 
 class Baddies(Entity):

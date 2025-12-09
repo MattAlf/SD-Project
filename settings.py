@@ -26,8 +26,13 @@ class Settings:
     PLAYER_HITBOX_Y_OFFSET_FACTOR = 0.33 # ~ 300 pixels vertical distance (original image, from the bottom of the image to the knight) / 1000 pixels high (original image, the whole image)
     PLAYER_JUMP_STRENGTH = 20 # How high the player can jump.
     PLAYER_ANIMATION_SLOWER = 2 # The higher the number, the slower the player animation speed.
-    PLAYER_STARTING_LIVES = 2 # The number of lives the player has at the start of the game.
+    PLAYER_STARTING_LIVES = 3 # The number of lives the player has at the start of the game.
     PLAYER_INVULNERABILITY_TIME = 2000 # The number of milliseconds the player has before he can be hit again by an enemy.
+
+    PLAYER_LIVES_DISPLAY_SIZE = 40
+    PLAYER_LIVES_MARGIN_X = 10
+    PLAYER_LIVES_MARGIN_Y = 10
+    PLAYER_LIVES_HEART_SPACING = 5
 
     SHIELD_DURATION_TIME = 5000 # The number of milliseconds the shield lasts.
 
@@ -35,10 +40,6 @@ class Settings:
     SHIELD_PICKUP_SPAWN_RATE_MIN = 10000 # The minimium number of milliseconds before another shield spawns (after the current one ends)
     SHIELD_PICKUP_SPAWN_RATE_MAX = 20000 # The maximum number of milliseconds before another shield spawns (after the current one ends)
     SHIELD_PICKUP_SCROLL_SPEED = 4
-
-
-
-
 
     # Spear
     SPEAR_WIDTH = 100
