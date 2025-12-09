@@ -6,7 +6,7 @@ from settings import Settings
 
 settings = Settings()
 
-def draw_text(text, font, surface, x, y, color=(0, 0, 122)):
+def draw_text(text, font, surface, x, y, color=(255,0,0)):
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
     text_rect.topleft = (x, y)
