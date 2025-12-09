@@ -84,7 +84,7 @@ BACKGROUND_IMAGES_AND_SPEEDS = [
     (pygame.image.load('background_layers/8_plant.png').convert_alpha(), 8 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
     ]
 # Ground image. It is drawn separately because it will be drawn in the foreground.
-GROUND_IMAGE_AND_SPEED = (pygame.image.load('background_layers/ground1.png').convert_alpha(), 10 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
+GROUND_IMAGE_AND_SPEED = (pygame.image.load('background_layers/ground.png').convert_alpha(), 10 * settings.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
 # Set up sounds.
 game_over_sound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
@@ -104,24 +104,19 @@ for image, scrolling_speed in BACKGROUND_IMAGES_AND_SPEEDS:
     background_group.add(Background(image, scrolling_speed, 2 * settings.WINDOW_WIDTH, 0))
 # Draws the background on the window surface.
 background_group.draw(window_surface)
-ground_group = pygame.sprite.Group()
 # Draws the ground in the foreground. It will be useful to store it in a separate group because we will draw th player between
 # the background and the ground.
+ground_group = pygame.sprite.Group()
 test_ground = Ground(GROUND_IMAGE_AND_SPEED[0], 0, 0, 0)
 for index in range(0,6):
     ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], index * test_ground.draw_width, settings.WINDOW_HEIGHT))
-
-ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], 0, settings.WINDOW_HEIGHT))
-ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
-ground_group.add(Ground(GROUND_IMAGE_AND_SPEED[0], GROUND_IMAGE_AND_SPEED[1], 2 * settings.WINDOW_WIDTH, settings.WINDOW_HEIGHT))
-
-ground_group.draw(window_surface)
+for ground in ground_group:
+    window_surface.blit(ground.image, ground.full_image_rect)
 # Draws the text on the starting screen.
 draw_text('Dodger', font, window_surface, settings.WINDOW_WIDTH // 3, settings.WINDOW_HEIGHT // 3)
 draw_text('Press a key to start.', font, window_surface, settings.WINDOW_WIDTH // 3, (settings.WINDOW_HEIGHT // 3) + 50)
 # Updates the window surface so that the player sees what has been drawn until now.
 pygame.display.update()
-print(len(background_group.sprites()))
 
 # Wait for the player to press a key to start.
 wait_for_player_to_press_key()
@@ -172,7 +167,6 @@ while True:
         baddie_group.draw(window_surface)
         platform_group.draw(window_surface)
         spear_group.draw(window_surface)
-  #      ground_group.draw(window_surface)
         for ground in ground_group:
             window_surface.blit(ground.image, ground.full_image_rect)
 

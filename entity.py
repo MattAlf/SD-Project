@@ -345,8 +345,8 @@ class Ground(pygame.sprite.Sprite):
         self.rect.x -= self.speed
         self.full_image_rect.x -= self.speed
         if self.rect.right <= 0 and self.full_image_rect.right <= 0:
-            self.rect.left += 2 * settings.WINDOW_WIDTH
-            self.full_image_rect.left += 2 * settings.WINDOW_WIDTH
+            self.rect.left += 5 * self.draw_width
+            self.full_image_rect.left += 5 * self.draw_width
 
 class Background(Entity):
     def __init__(self, image, scrolling_speed, x, y):
@@ -363,5 +363,5 @@ class Background(Entity):
         # background is drawn three times in the game),
         # reset its position to be directly to the right the screen (for seamless looping).
         if self.rect.right <= 0:
-            self.rect.left += 2 * settings.WINDOW_WIDTH
+            self.rect.left += 2 * self.width
     
