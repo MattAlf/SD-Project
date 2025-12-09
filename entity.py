@@ -309,21 +309,44 @@ class Platform(Entity):
         super().__init__(image, self.width, self.height)
 
         self.rect.left = settings.WINDOW_WIDTH
-        self.rect.top = random.randint(0, settings.WINDOW_HEIGHT - self.height)
+        self.rect.top = random.randint(0, settings.WINDOW_HEIGHT - self.height - settings.GROUND_HEIGHT)
 
     def update(self):
         self.rect.x -= settings.PLATFORM_SPEED
         if self.rect.right < 0:
             self.kill()
 
-class Ground(Entity):
-    def __init__(self, GROUND_IMAGE):
+class Ground(pygame.sprite.Sprite):
+    def __init__(self, GROUND_IMAGE, scrolling_speed, x, y):
+        super().__init__()
         image = GROUND_IMAGE
-        self.width = settings.WINDOW_WIDTH
-        self.height = settings.GROUND_HEIGHT
-        super().__init__(image, self.width, self.height)
+        target_height = settings.GROUND_HEIGHT
 
-        self.rect.bottomleft = (0, settings.WINDOW_HEIGHT)
+        original_width = image.get_width()
+        original_height = image.get_height()
+
+        scale_factor = target_height / original_height
+        self.draw_height = target_height
+        self.draw_width = int(original_width * scale_factor)
+        self.image = pygame.transform.scale(image, (self.draw_width, self.draw_height))
+
+        hitbox_width = self.draw_width
+        hitbox_height = int(self.draw_height * settings.GROUND_HITBOX_IMAGE_HEIGHT_FACTOR)
+     
+        self.rect = pygame.Rect(0, 0, hitbox_width, hitbox_height)
+        self.rect.bottomleft = (x, y)
+
+        self.full_image_rect = self.image.get_rect()
+        self.full_image_rect.bottomleft = (self.rect.left, self.rect.bottom)
+
+        self.speed = scrolling_speed
+
+    def update(self):
+        self.rect.x -= self.speed
+        self.full_image_rect.x -= self.speed
+        if self.rect.right <= 0 and self.full_image_rect.right <= 0:
+            self.rect.left += 5 * self.draw_width
+            self.full_image_rect.left += 5 * self.draw_width
 
 class Background(Entity):
     def __init__(self, image, scrolling_speed, x, y):
@@ -336,8 +359,9 @@ class Background(Entity):
 
     def update(self):
         self.rect.x -= self.speed        
-        # If the image has scrolled entirely off the left of the screen,
+        # If the image has scrolled entirely off 2 times the window width to left of the screen (because the
+        # background is drawn three times in the game),
         # reset its position to be directly to the right the screen (for seamless looping).
         if self.rect.right <= 0:
-            self.rect.left = settings.WINDOW_WIDTH
+            self.rect.left += 2 * self.width
     
