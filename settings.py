@@ -6,14 +6,13 @@ class Settings:
     WINDOW_WIDTH = 1280
     WINDOW_HEIGHT = 720
     FPS = 60
-        
+    
     # Colors
     TEXT_COLOR = (0, 0, 0)
     BACKGROUND_COLOR = (255, 255, 255)
 
     # Ground
     GROUND_HEIGHT = 60
-    # Original image height = 100 pixels | ground height = 65 pixels | 
     GROUND_HITBOX_IMAGE_HEIGHT_FACTOR = 0.70 # 70 pixels high (original image, height of the ground) / 100 pixels (original image height)
 
     # Background scroll speed multiplicator. It will speed up the background scrolling speed while keeping the
@@ -27,6 +26,19 @@ class Settings:
     PLAYER_HITBOX_Y_OFFSET_FACTOR = 0.33 # ~ 300 pixels vertical distance (original image, from the bottom of the image to the knight) / 1000 pixels high (original image, the whole image)
     PLAYER_JUMP_STRENGTH = 20 # How high the player can jump.
     PLAYER_ANIMATION_SLOWER = 2 # The higher the number, the slower the player animation speed.
+    PLAYER_STARTING_LIVES = 2 # The number of lives the player has at the start of the game.
+    PLAYER_INVULNERABILITY_TIME = 2000 # The number of milliseconds the player has before he can be hit again by an enemy.
+
+    SHIELD_DURATION_TIME = 5000 # The number of milliseconds the shield lasts.
+
+    SHIELD_PICKUP_SIZE = 50 # The size of the pickable shield's image.
+    SHIELD_PICKUP_SPAWN_RATE_MIN = 10000 # The minimium number of milliseconds before another shield spawns (after the current one ends)
+    SHIELD_PICKUP_SPAWN_RATE_MAX = 20000 # The maximum number of milliseconds before another shield spawns (after the current one ends)
+    SHIELD_PICKUP_SCROLL_SPEED = 4
+
+
+
+
 
     # Spear
     SPEAR_WIDTH = 100

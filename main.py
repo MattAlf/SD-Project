@@ -21,6 +21,9 @@ font = pygame.font.SysFont(None, 48)
 BADDIE_IMAGE = pygame.image.load('baddie.png').convert_alpha()
 PLATFORM_IMAGE = pygame.image.load('platform.png').convert_alpha()
 SPEAR_IMAGE = pygame.image.load('spear.png').convert_alpha()
+SHIELD_EFFECT_IMAGE = pygame.image.load('shield_effect.png').convert_alpha()
+SHIELD_PICKUP_IMAGE = pygame.image.load('shield_pickup.png').convert_alpha()
+
 
 # The player is animated. So in order to store all of the different animations we created a dictionary.
 # Each key gives acces to the list with all of the images related to this action. We also had to flip the images
@@ -130,21 +133,24 @@ while True:
     spear_group = pygame.sprite.Group()
     baddie_group = pygame.sprite.Group()
     platform_group = pygame.sprite.Group()
+    shield_effect_group = pygame.sprite.Group()
+    shield_pickup_group = pygame.sprite.Group()
     player_group.draw(window_surface)
     score = 0
     baddie_add_counter = 0
     platform_add_counter = 0
+    shield_spawn_timer = 0
     pygame.mixer.music.play(-1, 0.0)
 
     # Second game loop
-    while True:
+    while not player.dead:
         score += 1
 
         # Add new baddies
         baddie_add_counter += 1
         if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
             baddie_add_counter = 0
-  #          baddie_group.add(Baddies(BADDIE_IMAGE))
+            baddie_group.add(Baddies(BADDIE_IMAGE))
 
         # Add new platform 
         platform_add_counter += 1
@@ -152,13 +158,22 @@ while True:
             platform_add_counter = 0
             platform_group.add(Platform(PLATFORM_IMAGE))
 
+        # Apparition aléatoire du bouclier (basé sur le temps ou le score)
+        shield_spawn_timer += 1
+        if shield_spawn_timer >= 100:
+            shield_spawn_timer = 0
+            # Ajoutez le bouclier ramassable au groupe
+            shield_pickup_group.add(ShieldPickup(SHIELD_PICKUP_IMAGE))
+
         # Update game objects
         platform_group.update()
-        player_group.update(ground_group, platform_group, spear_group, SPEAR_IMAGE)
+        player_group.update(ground_group, platform_group, spear_group, SPEAR_IMAGE, baddie_group, shield_pickup_group, shield_effect_group, SHIELD_EFFECT_IMAGE)
         baddie_group.update()
         spear_group.update()
         background_group.update()
         ground_group.update()
+        shield_effect_group.update()
+        shield_pickup_group.update()
 
         # Draw everything
         background_group.draw(window_surface)
@@ -169,13 +184,15 @@ while True:
         spear_group.draw(window_surface)
         for ground in ground_group:
             window_surface.blit(ground.image, ground.full_image_rect)
+        shield_effect_group.draw(window_surface)
+        shield_pickup_group.draw(window_surface)
+ #       print(player.invulnerability_timer, player.is_invulnerable, player.has_shield, player.current_time)
+        
+        # ... (dessin du score)
+        draw_text('Lives: %s' % (player.lives), font, window_surface, 10, 50) # Afficher les vies
 
         # Update display inside the game
         pygame.display.update()
-        
-        # If the player touched a baddie he lost
-        if pygame.sprite.spritecollide(player, baddie_group, False):
-            break
 
         # Control FPS
         clock.tick(settings.FPS)

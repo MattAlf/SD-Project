@@ -58,11 +58,23 @@ class Player(pygame.sprite.Sprite):
         self.HORIZONTAL_FRICTION = settings.HORIZONTAL_FRICTION
         self.VERTICAL_ACCELERATION = settings.VERTICAL_ACCELERATION
         self.PLAYER_JUMP_STRENGTH = settings.PLAYER_JUMP_STRENGTH
+        
         # This is the cooldown that the player will have to wait before being able to throw another spear.
         self.attack_cooldown = settings.SPEAR_ATTACK_COOLDOWN
         # We set 0 as the initial last attack time. This allows the player to start shooting
-        # 'settings.SPEAR_ATTACK_COOLDOWN' time after the begining of the game.
+        # 'settings.SPEAR_ATTACK_COOLDOWN' time after the beginning of the game.
         self.last_attack_time = 0
+
+        # Setting the variables regarding the lives and shield.
+        self.lives = settings.PLAYER_STARTING_LIVES
+        # These two timers will be used to track when will the corresponding effect need to be disabled after being activated.
+        self.invulnerability_timer = 0
+        self.shield_timer = 0
+        # We set the variables to false.
+        self.has_shield = False
+        self.is_invulnerable = False
+        self.dead = False
+
         # We also set the movement variables to False.
         self.run_left = False
         self.run_right = False
@@ -88,6 +100,7 @@ class Player(pygame.sprite.Sprite):
             if event.type == KEYUP:
                 if event.key == K_ESCAPE:
                     terminate()
+            
         # Here we look at the state of the all the keys at each frame. It is useful because
         # running left or right are continuous movements.
         keys = pygame.key.get_pressed()
@@ -104,7 +117,9 @@ class Player(pygame.sprite.Sprite):
         if self.run_left and self.run_right:
             self.run_right = self.run_left = False
 
-    def update(self, ground_group, platform_group, spear_group, SPEAR_IMAGE):
+    def update(self, ground_group, platform_group, spear_group, SPEAR_IMAGE, baddie_group, shield_pickup_group, shield_effect_group, SHIELD_EFFECT_IMAGE):
+        # Here we get the current time in ticks (milliseconds).
+        self.current_time = pygame.time.get_ticks()
         # Check for the player's input at each update.
         self.handle_input(ground_group, platform_group, spear_group, SPEAR_IMAGE)
         # Set the initial acceleration to (0, gravity). (gravity is always present)
@@ -157,6 +172,52 @@ class Player(pygame.sprite.Sprite):
         # update the player's rectangle so that the jumping mechanics work.
         self.check_platform_collisions(platform_group)
         self.check_ground_collision(ground_group)
+        
+        # Checks if the invulnerability effect is over and needs to be disabled. Also it makes the invulnerability effect
+        # visible by making the player image flash.
+        if self.is_invulnerable:
+            if self.current_time > self.invulnerability_timer:
+                self.is_invulnerable = False
+            # Makes the player's image go invisible every 200 milliseconds, that makes the player flash.
+            if self.current_time // 100 % 2 == 0:
+                self.image.set_alpha(0) # Makes the player invisible
+            else:
+                self.image.set_alpha(255) # Makes the player visible again.
+        else:
+            self.image.set_alpha(255) # Makes the player visible by default.
+
+        self.check_for_pickable_objects_collision(shield_pickup_group, shield_effect_group, SHIELD_EFFECT_IMAGE)
+        self.check_for_enemy_collision(baddie_group)
+
+    def check_for_pickable_objects_collision(self, shield_pickup_group, shield_effect_group, SHIELD_EFFECT_IMAGE):
+        collected_shield_object = pygame.sprite.spritecollide(self, shield_pickup_group, True)
+        if collected_shield_object:
+            if not self.has_shield:
+                self.has_shield = True
+                self.shield_timer = self.current_time + settings.SHIELD_DURATION_TIME
+                # Ajouter le bouclier au groupe pour qu'il soit dessiné et mis à jour
+                shield_effect_group.add(ShieldEffect(SHIELD_EFFECT_IMAGE, self))
+
+    def check_for_enemy_collision(self, baddie_group):
+        touched_enemy = pygame.sprite.spritecollide(self, baddie_group, True)
+        if touched_enemy:
+            self.take_damage()
+    
+    def take_damage(self):        
+        if self.has_shield:
+            # If the player has a shield and takes damage, the shield absorbs it and breaks.
+            self.has_shield = False
+            return
+        if not self.is_invulnerable:
+            self.lives -= 1
+            if self.lives > 0:
+                # If the player is still alive, then the invulnerability effect starts and will be on for
+                # 'settings.PLAYER_INVULNERABILITY_TIME' milliseconds.
+                self.is_invulnerable = True
+                self.invulnerability_timer = self.current_time + settings.PLAYER_INVULNERABILITY_TIME
+            else:
+                # If the player has no more lives, he dies.
+                self.dead = True
     
     def check_platform_collisions(self, platform_group):
         # touched_platforms will be equal to True if the player (self) is colliding with one of the platforms
@@ -210,13 +271,11 @@ class Player(pygame.sprite.Sprite):
             self.in_a_jump = True
 
     def attack(self, spear_group, SPEAR_IMAGE):
-        # Here we get the current time in ticks (milliseconds).
-        current_time = pygame.time.get_ticks()
         # Here we check if the cooldown is over by seeing if there is at least 'self.attack_cooldown' milliseconds
         # that separate the current time and the last attack time.
-        if current_time - self.last_attack_time > self.attack_cooldown:
+        if self.current_time - self.last_attack_time > self.attack_cooldown:
             # Then we set the last attack time as the current time so that the next attack attempt will be up to date.
-            self.last_attack_time = current_time
+            self.last_attack_time = self.current_time
             # Here we check if the player's is facing right or left and setting the varibales according to it.
             if self.velocity.x > 0:
                 current_direction = 1
@@ -229,7 +288,7 @@ class Player(pygame.sprite.Sprite):
             start_x = self.rect.centerx
             start_y = self.rect.centery
             # Here we create the new spear and add it to the spear_group.
-            new_spear = Bullet(start_x, start_y, current_direction, SPEAR_IMAGE)
+            new_spear = Spear(start_x, start_y, current_direction, SPEAR_IMAGE)
             spear_group.add(new_spear)
         
     def animate(self, list_of_images, animation_speed):
@@ -250,7 +309,7 @@ class Player(pygame.sprite.Sprite):
             self.attack_right = False
             self.attack_left = False
 
-class Bullet(pygame.sprite.Sprite):
+class Spear(pygame.sprite.Sprite):
     def __init__(self, position_x, position_y, direction, SPEAR_IMAGE):
         super().__init__()
         # It's the same process as for the player's image.
@@ -281,6 +340,40 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.speed * self.direction
         # If the spear is out of the window screen we remove it from the spear_group.        
         if self.rect.right < 0 or self.rect.left > settings.WINDOW_WIDTH:
+            self.kill()
+
+class ShieldPickup(pygame.sprite.Sprite):
+    def __init__(self, SHIELD_PICKUP_IMAGE):
+        super().__init__()
+        # Charger et redimensionner l'image du pick-up
+        self.image = pygame.transform.scale(SHIELD_PICKUP_IMAGE, (settings.SHIELD_PICKUP_SIZE, settings.SHIELD_PICKUP_SIZE))
+        self.rect = self.image.get_rect()
+        
+        # Position d'apparition : aléatoire sur Y, à droite de l'écran sur X
+        self.rect.left = settings.WINDOW_WIDTH 
+        self.rect.bottom = random.randint(settings.SHIELD_PICKUP_SIZE, settings.WINDOW_HEIGHT - settings.GROUND_HEIGHT)
+        
+        self.speed = settings.SHIELD_PICKUP_SCROLL_SPEED
+        
+    def update(self):
+        current_time = pygame.time.get_ticks()
+        self.rect.x -= self.speed
+        if self.rect.right < 0:
+            self.kill()            
+
+class ShieldEffect(pygame.sprite.Sprite):
+    def __init__(self, SHIELD_IMAGE, player):
+        super().__init__()
+        # Scales the shield image to the player's size.
+        self.image = pygame.transform.scale(SHIELD_IMAGE, (player.rect.height + 10, player.rect.height + 10))
+        self.rect = self.image.get_rect()
+        self.player = player # Référence au joueur qu'il doit suivre
+    def update(self):
+        # The shield follows the player's position.
+        self.rect.center = self.player.rect.center
+        # Checks if the shield effect is over and needs to be disabled.
+        if player.has_shield and player.current_time > player.shield_timer:
+            player.has_shield = False
             self.kill()
 
 class Baddies(Entity):
