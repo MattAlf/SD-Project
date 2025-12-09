@@ -196,24 +196,43 @@ class OptionsMenu:
 
     def toggle_fullscreen(self, screen, windowed_size, main_menu, pause_menu):
         """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
+        display_kwargs = {}
+        try:
+            # Keep fullscreen/windowed transitions on the monitor that currently hosts the window.
+            display_kwargs["display"] = pygame.display.get_window_display_index()
+        except (pygame.error, AttributeError):
+            pass  # Older pygame/SDL versions may not support per-display window queries.
+
         if self.fullscreen:
-            screen = pygame.display.set_mode(
-                windowed_size,
-                pygame.RESIZABLE | pygame.DOUBLEBUF
-            )
+            try:
+                screen = pygame.display.set_mode(
+                    windowed_size,
+                    pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF,
+                    vsync=1,
+                    **display_kwargs
+                )
+            except TypeError:
+                screen = pygame.display.set_mode(
+                    windowed_size,
+                    pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF,
+                    **display_kwargs
+                )
             self.fullscreen = False
         else:
             windowed_size = screen.get_size()
             try:
                 screen = pygame.display.set_mode(
-                    (0, 0),
-                    pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF
+                    (self.settings.DEFAULT_WINDOW_WIDTH, self.settings.DEFAULT_WINDOW_HEIGHT),
+                    pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF,
+                    vsync=1,
+                    **display_kwargs
                 )
-            except pygame.error:
+            except (pygame.error, TypeError):
                 # Fallback to standard fullscreen if SCALED is unsupported.
                 screen = pygame.display.set_mode(
-                    (0, 0),
-                    pygame.FULLSCREEN | pygame.DOUBLEBUF
+                    (self.settings.DEFAULT_WINDOW_WIDTH, self.settings.DEFAULT_WINDOW_HEIGHT),
+                    pygame.FULLSCREEN | pygame.DOUBLEBUF,
+                    **display_kwargs
                 )
             self.fullscreen = True
 

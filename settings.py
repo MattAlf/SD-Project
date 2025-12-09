@@ -6,10 +6,10 @@ from pathlib import Path  # Used to locate asset files relative to this script.
 class Settings:
     """Stores tunable values and scales them to the current screen size."""
 
-    BASE_WIDTH = 800  # Reference width for scaling.
-    BASE_HEIGHT = 600  # Reference height for scaling.
-    DEFAULT_WINDOW_WIDTH = 800  # Default windowed width.
-    DEFAULT_WINDOW_HEIGHT = 600  # Default windowed height.
+    BASE_WIDTH = 1280  # Reference width for scaling.
+    BASE_HEIGHT = 720  # Reference height for scaling.
+    DEFAULT_WINDOW_WIDTH = 1280  # Default windowed width.
+    DEFAULT_WINDOW_HEIGHT = 720  # Default windowed height.
 
     def __init__(self):
         if not pygame.get_init():
@@ -166,9 +166,9 @@ class Settings:
 
         bg_group = pygame.sprite.Group()
         for image, scrolling_speed in self.BACKGROUND_IMAGES_AND_SPEEDS:
+            # Two tiles per layer are enough for seamless horizontal scrolling.
             bg_group.add(Background(image, scrolling_speed, 0, 0))
             bg_group.add(Background(image, scrolling_speed, self.WINDOW_WIDTH, 0))
-            bg_group.add(Background(image, scrolling_speed, 2 * self.WINDOW_WIDTH, 0))
 
         grd_group = pygame.sprite.Group()  # Ground collision surface.
         grd_group.add(Ground())
@@ -192,10 +192,18 @@ class Settings:
     def create_window(self):
         """Create a resizable window using the current settings dimensions."""
         os.environ["SDL_VIDEO_CENTERED"] = "1"
-        screen = pygame.display.set_mode(
-            (self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
-            pygame.RESIZABLE | pygame.DOUBLEBUF
-        )
+        try:
+            screen = pygame.display.set_mode(
+                (self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
+                pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF,
+                vsync=1
+            )
+        except TypeError:
+            # Older pygame versions may not support vsync kwarg; fall back quietly.
+            screen = pygame.display.set_mode(
+                (self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
+                pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF
+            )
         self._convert_surfaces_for_display(screen)
         windowed_size = (self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         return screen, windowed_size

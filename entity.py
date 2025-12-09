@@ -8,7 +8,13 @@ import random
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image, image_width, image_height):
         super().__init__()
-        self.image = pygame.transform.scale(image, (image_width, image_height))
+        scaled = pygame.transform.scale(image, (image_width, image_height))
+        # Convert scaled surfaces for faster blitting.
+        try:
+            scaled = scaled.convert_alpha()
+        except pygame.error:
+            scaled = scaled.convert()
+        self.image = scaled
         self.rect = self.image.get_rect()
 
 

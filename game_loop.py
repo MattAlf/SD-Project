@@ -23,7 +23,6 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
     music_muted_for_pause = False
     pause_music_volume = pygame.mixer.music.get_volume()
     pause_menu._create_buttons()
-    clock = pygame.time.Clock()  # Single clock reused for FPS throttling.
 
     def pause_game():
         nonlocal paused, music_muted_for_pause, pause_music_volume
@@ -43,6 +42,11 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
             music_muted_for_pause = False
 
     pygame.mixer.music.play(-1, 0.0)  # Loop background music for this round.
+
+    fps_clock = pygame.time.Clock()
+    fps_font = pygame.font.SysFont(None, 24)
+    last_fps_blit = 0
+    fps_text = None
 
     while True:
         events = pygame.event.get()  # Capture all events for this frame.
@@ -75,7 +79,7 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
         if paused:
             pause_menu.draw(screen)
             pygame.display.update()
-            clock.tick(settings.FPS)
+            fps_clock.tick(settings.FPS)
             continue
 
         score += 1  # Increment score every frame as a simple timer.
@@ -108,13 +112,21 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
         spear_group.draw(screen)
         ground_group.draw(screen)
 
+        # FPS overlay (updated once per 0.25s to avoid extra render cost).
+        now_ticks = pygame.time.get_ticks()
+        if now_ticks - last_fps_blit > 250:
+            fps_text = fps_font.render(f"{int(fps_clock.get_fps())} FPS", True, (0, 0, 0))
+            last_fps_blit = now_ticks
+        if fps_text:
+            screen.blit(fps_text, (10, 30))
+
         pygame.display.update()  # Present frame.
 
         # If the player touched a baddie he lost.
         if pygame.sprite.spritecollide(player, baddie_group, False):
             break
 
-        clock.tick(settings.FPS)  # Control FPS inside game loop.
+        fps_clock.tick(settings.FPS)  # Control FPS inside game loop.
 
     # Shows the game over screen.
     pygame.mixer.music.stop()
