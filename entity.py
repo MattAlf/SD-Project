@@ -51,6 +51,12 @@ class Player(pygame.sprite.Sprite):
 
         self.attack_cooldown = settings.SPEAR_ATTACK_COOLDOWN
         self.last_attack_time = 0
+        self.lives = settings.PLAYER_STARTING_LIVES
+        self.invulnerability_timer = 0
+        self.shield_timer = 0
+        self.has_shield = False
+        self.is_invulnerable = False
+        self.dead = False
         self.run_left = False
         self.run_right = False
         self.in_a_jump = False
@@ -75,7 +81,8 @@ class Player(pygame.sprite.Sprite):
         if self.run_left and self.run_right:
             self.run_left = self.run_right = False
 
-    def update(self, events, ground_group, platform_group, spear_group):
+    def update(self, events, ground_group, platform_group, spear_group, baddie_group, shield_pickup_group, shield_effect_group):
+        self.current_time = pygame.time.get_ticks()
         self.handle_input(events, ground_group, platform_group, spear_group)
         self.acceleration = pygame.math.Vector2(0, self.VERTICAL_ACCELERATION)
         if self.run_left or self.run_right:
@@ -112,6 +119,21 @@ class Player(pygame.sprite.Sprite):
         )
         self.check_platform_collisions(platform_group)
         self.check_ground_collision(ground_group)
+
+        if self.has_shield and self.current_time > self.shield_timer:
+            self.has_shield = False
+
+        if self.is_invulnerable:
+            if self.current_time > self.invulnerability_timer:
+                self.is_invulnerable = False
+                self.image.set_alpha(255)
+            else:
+                self.image.set_alpha(0 if self.current_time // 100 % 2 == 0 else 255)
+        else:
+            self.image.set_alpha(255)
+
+        self.check_for_pickable_objects_collision(shield_pickup_group, shield_effect_group)
+        self.check_for_enemy_collision(baddie_group)
 
     def check_platform_collisions(self, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
@@ -152,7 +174,7 @@ class Player(pygame.sprite.Sprite):
             self.in_a_jump = True
 
     def attack(self, spear_group):
-        current_time = pygame.time.get_ticks()
+        current_time = getattr(self, "current_time", pygame.time.get_ticks())
         if current_time - self.last_attack_time > self.attack_cooldown:
             self.last_attack_time = current_time
             if self.velocity.x > 0:
@@ -177,6 +199,30 @@ class Player(pygame.sprite.Sprite):
             self.attack_right = False
             self.attack_left = False
 
+    def check_for_pickable_objects_collision(self, shield_pickup_group, shield_effect_group):
+        collected_shield_object = pygame.sprite.spritecollide(self, shield_pickup_group, True)
+        if collected_shield_object and not self.has_shield:
+            self.has_shield = True
+            self.shield_timer = self.current_time + settings.SHIELD_DURATION_TIME
+            shield_effect_group.add(ShieldEffect(self, settings.SHIELD_EFFECT_IMAGE))
+
+    def check_for_enemy_collision(self, baddie_group):
+        touched_enemy = pygame.sprite.spritecollide(self, baddie_group, True)
+        if touched_enemy:
+            self.take_damage()
+
+    def take_damage(self):
+        if self.has_shield:
+            self.has_shield = False
+            return
+        if not self.is_invulnerable:
+            self.lives -= 1
+            if self.lives > 0:
+                self.is_invulnerable = True
+                self.invulnerability_timer = self.current_time + settings.PLAYER_INVULNERABILITY_TIME
+            else:
+                self.dead = True
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, position_x, position_y, direction, spear_image):
@@ -196,9 +242,43 @@ class Bullet(pygame.sprite.Sprite):
         self.speed = settings.SPEAR_SPEED
         self.direction = direction
 
-    def update(self):
+    def update(self, baddie_group):
         self.rect.x += self.speed * self.direction
         if self.rect.right < 0 or self.rect.left > settings.WINDOW_WIDTH:
+            self.kill()
+        if pygame.sprite.spritecollide(self, baddie_group, True):
+            self.kill()
+
+
+class ShieldPickup(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.transform.scale(
+            settings.SHIELD_PICKUP_IMAGE,
+            (settings.SHIELD_PICKUP_SIZE, settings.SHIELD_PICKUP_SIZE)
+        )
+        self.rect = self.image.get_rect()
+        self.rect.left = settings.WINDOW_WIDTH
+        self.rect.bottom = random.randint(settings.SHIELD_PICKUP_SIZE, settings.WINDOW_HEIGHT - settings.GROUND_HEIGHT)
+        self.speed = settings.SHIELD_PICKUP_SCROLL_SPEED
+
+    def update(self):
+        self.rect.x -= self.speed
+        if self.rect.right < 0:
+            self.kill()
+
+
+class ShieldEffect(pygame.sprite.Sprite):
+    def __init__(self, player, shield_image):
+        super().__init__()
+        size = player.rect.height + 10
+        self.image = pygame.transform.scale(shield_image, (size, size))
+        self.rect = self.image.get_rect()
+        self.player = player
+
+    def update(self):
+        self.rect.center = self.player.rect.center
+        if not self.player.has_shield:
             self.kill()
 
 

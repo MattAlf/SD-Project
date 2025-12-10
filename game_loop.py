@@ -1,8 +1,9 @@
 # game_loop.py
 # Encapsulates the gameplay loop so main.py stays focused on wiring menus and state transitions.
+import random
 import pygame
 from pygame.locals import *
-from entity import Player, Platform  # Baddies available if spawn is re-enabled.
+from entity import Player, Platform, Baddies, ShieldPickup
 from functions import game_over_text, wait_for_player_to_press_key
 
 
@@ -13,12 +14,18 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
     # Core game state setup.
     player = Player()
     player_group = pygame.sprite.GroupSingle(player)
-    baddie_group = pygame.sprite.Group()  # Enemies (spawn disabled but scaffold kept).
+    baddie_group = pygame.sprite.Group()
     platform_group = pygame.sprite.Group()
     spear_group = pygame.sprite.Group()
+    shield_pickup_group = pygame.sprite.Group()
+    shield_effect_group = pygame.sprite.Group()
     score = 0
     baddie_add_counter = 0
     platform_add_counter = 0
+    next_shield_spawn = pygame.time.get_ticks() + random.randint(
+        settings.SHIELD_PICKUP_SPAWN_RATE_MIN,
+        settings.SHIELD_PICKUP_SPAWN_RATE_MAX,
+    )
     paused = False
     music_muted_for_pause = False
     pause_music_volume = pygame.mixer.music.get_volume()
@@ -84,11 +91,11 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
 
         score += 1  # Increment score every frame as a simple timer.
 
-        # Add new baddies (currently disabled; keep counter for future use).
+        # Add new baddies.
         baddie_add_counter += 1
         if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
             baddie_add_counter = 0
- #           baddie_group.add(Baddies())
+            baddie_group.add(Baddies())
 
         # Add new platform at a fixed cadence.
         platform_add_counter += 1
@@ -96,24 +103,37 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
             platform_add_counter = 0
             platform_group.add(Platform())
 
+        now_ticks = pygame.time.get_ticks()
+
+        if now_ticks >= next_shield_spawn and not shield_pickup_group:
+            shield_pickup_group.add(ShieldPickup())
+            next_shield_spawn = now_ticks + random.randint(
+                settings.SHIELD_PICKUP_SPAWN_RATE_MIN,
+                settings.SHIELD_PICKUP_SPAWN_RATE_MAX,
+            )
+
         # Update game objects.
         platform_group.update()
-        player_group.update(events, ground_group, platform_group, spear_group)
+        player_group.update(events, ground_group, platform_group, spear_group, baddie_group, shield_pickup_group, shield_effect_group)
         baddie_group.update()
-        spear_group.update()
+        spear_group.update(baddie_group)
         background_group.update()
+        shield_pickup_group.update()
+        shield_effect_group.update()
 
         # Draw everything.
         background_group.draw(screen)
         settings.draw_score(screen, font, score)
+        shield_pickup_group.draw(screen)
         screen.blit(player.image, player.full_image_rect)
+        shield_effect_group.draw(screen)
         baddie_group.draw(screen)
         platform_group.draw(screen)
         spear_group.draw(screen)
         ground_group.draw(screen)
+        settings.draw_lives(screen, player)
 
         # FPS overlay (updated once per 0.25s to avoid extra render cost).
-        now_ticks = pygame.time.get_ticks()
         if now_ticks - last_fps_blit > 250:
             fps_text = fps_font.render(f"{int(fps_clock.get_fps())} FPS", True, (0, 0, 0))
             last_fps_blit = now_ticks
@@ -122,8 +142,7 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
 
         pygame.display.update()  # Present frame.
 
-        # If the player touched a baddie he lost.
-        if pygame.sprite.spritecollide(player, baddie_group, False):
+        if player.dead:
             break
 
         fps_clock.tick(settings.FPS)  # Control FPS inside game loop.
