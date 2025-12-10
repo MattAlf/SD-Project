@@ -4,11 +4,10 @@ import random
 import pygame
 from pygame.locals import *
 from entity import Player, Platform, Baddies, ShieldPickup
-from functions import game_over_text, wait_for_player_to_press_key
 
 
-def run_game_round(screen, settings, pause_menu, font, game_over_sound):
-    """Run a single game round; returns when the player dies or exits to main menu."""
+def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over_sound):
+    """Run a single game round; returns a next action when the player pauses or dies."""
     background_group, ground_group = settings.build_static_layers()  # Static scenery.
 
     # Core game state setup.
@@ -147,17 +146,34 @@ def run_game_round(screen, settings, pause_menu, font, game_over_sound):
 
         fps_clock.tick(settings.FPS)  # Control FPS inside game loop.
 
-    # Shows the game over screen.
+    # Show the game over screen with retry/main menu options.
     pygame.mixer.music.stop()
     game_over_sound.play()
-    game_over_text(screen)
-    pygame.display.update()
-    wait_for_player_to_press_key()
-    game_over_sound.stop()
-    return "GAME_OVER"
+    game_over_menu.refresh_layout()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                raise SystemExit
+
+            action = game_over_menu.handle_event(event)
+            if action == "RETRY":
+                game_over_sound.stop()
+                return "RETRY"
+            if action == "MAIN_MENU":
+                game_over_sound.stop()
+                return "MAIN_MENU"
+            if action == "EXIT":
+                pygame.quit()
+                raise SystemExit
+
+        game_over_menu.draw(screen, score)
+        pygame.display.update()
+        fps_clock.tick(settings.FPS)
 
 
-def run_game_app(screen, windowed_size, settings, main_menu, options_menu, pause_menu, clock, rebuild_static_layers, run_game_round_fn):
+def run_game_app(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock, rebuild_static_layers, run_game_round_fn):
     """Outer game loop: menu → game round → repeat. Updates screen/window on fullscreen toggle."""
     from menu import show_main_menu
     while True:
@@ -168,6 +184,7 @@ def run_game_app(screen, windowed_size, settings, main_menu, options_menu, pause
             main_menu,
             options_menu,
             pause_menu,
+            game_over_menu,
             clock,
             rebuild_static_layers
         )

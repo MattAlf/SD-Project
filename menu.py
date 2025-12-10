@@ -192,7 +192,7 @@ class OptionsMenu:
         self.slider = VolumeSlider(screen_w // 2, slider_y)
         self.slider.set_value(self.volume)  # Sync slider knob to current volume.
 
-    def toggle_fullscreen(self, screen, windowed_size, main_menu, pause_menu):
+    def toggle_fullscreen(self, screen, windowed_size, main_menu, pause_menu, game_over_menu):
         """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
         display_kwargs = {}
         try:
@@ -240,6 +240,7 @@ class OptionsMenu:
         main_menu._create_buttons()  # Recenter main menu buttons.
         self.refresh_layout()  # Recenter options buttons/slider.
         pause_menu._create_buttons()  # Recenter pause menu buttons.
+        game_over_menu.refresh_layout()  # Recenter game over menu buttons.
         return screen, windowed_size
 
 
@@ -274,7 +275,49 @@ class PauseMenu:
         return None
 
 
-def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, clock, on_fullscreen_toggled):
+class GameOverMenu:
+    def __init__(self, font):
+        self.font = font
+        self.buttons = []
+        self._create_buttons()
+
+    def _create_buttons(self):
+        self.buttons = build_buttons(['Retry', 'Main Menu', 'Exit'], self.font, center_ratio=0.6)
+
+    def draw(self, surface, score):
+        bg = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())
+        surface.blit(bg, (0, 0))
+
+        title = self.font.render('Game Over', True, 'white')
+        title_rect = title.get_rect(center=(surface.get_width() // 2, surface.get_height() // 3))
+        surface.blit(title, title_rect)
+
+        score_text = self.font.render(f'Score: {score}', True, 'white')
+        score_rect = score_text.get_rect(center=(surface.get_width() // 2, title_rect.bottom + 40))
+        surface.blit(score_text, score_rect)
+
+        for b in self.buttons:
+            b.draw(surface)
+
+    def handle_event(self, event):
+        if event.type == KEYDOWN and event.key == K_ESCAPE:
+            return "MAIN_MENU"
+
+        for i, b in enumerate(self.buttons):
+            if b.is_clicked(event):
+                if i == 0:
+                    return "RETRY"
+                if i == 1:
+                    return "MAIN_MENU"
+                if i == 2:
+                    return "EXIT"
+        return None
+
+    def refresh_layout(self):
+        self._create_buttons()
+
+
+def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock, on_fullscreen_toggled):
     """Main menu loop; exits when the user starts the game or quits."""
     pygame.mixer.music.stop()
     current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
@@ -299,7 +342,7 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
 
                 if result == "TOGGLE_FULLSCREEN":
                     screen, windowed_size = options_menu.toggle_fullscreen(
-                        screen, windowed_size, main_menu, pause_menu
+                        screen, windowed_size, main_menu, pause_menu, game_over_menu
                     )
                     on_fullscreen_toggled()
                 elif result == "BACK":
@@ -314,16 +357,16 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
         clock.tick(settings.FPS)
 
 
-def toggle_fullscreen(screen, windowed_size, options_menu, main_menu, pause_menu, rebuild_static_layers):
+def toggle_fullscreen(screen, windowed_size, options_menu, main_menu, pause_menu, game_over_menu, rebuild_static_layers):
     """Toggle fullscreen/windowed modes, refresh UI layout, and rebuild static layers."""
     screen, windowed_size = options_menu.toggle_fullscreen(
-        screen, windowed_size, main_menu, pause_menu
+        screen, windowed_size, main_menu, pause_menu, game_over_menu
     )
     rebuild_static_layers()
     return screen, windowed_size
 
 
-def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, clock, rebuild_static_layers):
+def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock, rebuild_static_layers):
     """
     Wrapper around run_main_menu for compatibility; returns (choice, screen, windowed_size).
     """
@@ -334,6 +377,7 @@ def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pau
         main_menu,
         options_menu,
         pause_menu,
+        game_over_menu,
         clock,
         rebuild_static_layers
     )
