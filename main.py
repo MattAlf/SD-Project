@@ -1,30 +1,37 @@
 # main.py
 import pygame
 import sys
-from pygame.locals import *
 from settings import settings
 from menu import MainMenu, OptionsMenu, PauseMenu
-from state_manager import run_app
-
-
+from game_loop import run_game_app 
 
 pygame.init()
 
-info = pygame.display.Info()  # Grab current display info
-settings.resize(settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT)  # Apply windowed size to all scalable settings
-
-# Create the window and remember windowed size for toggling fullscreen
+settings.resize(settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT)
 screen, windowed_size = settings.create_window()
 
-clock = pygame.time.Clock()  # Regulates FPS across menus and gameplay.
-font = pygame.font.SysFont(None, 48)  # Shared font for UI text.
+clock = pygame.time.Clock()
+# C'est ici que la font est créée, on doit la faire voyager
+font = pygame.font.SysFont(None, 48)
 
-# Build static layers sized to the current screen.
-settings.initialize_static_layers(screen)
+def rebuild_assets():
+    settings.initialize_static_layers(pygame.display.get_surface())
 
-main_menu = MainMenu(font)  # Main menu UI.
-options_menu = OptionsMenu(font)  # Options UI (fullscreen + volume).
-pause_menu = PauseMenu(font)  # Pause overlay UI.
+rebuild_assets()
 
-# Delegate outer loop to state manager
-run_app(settings, screen, windowed_size, main_menu, options_menu, pause_menu, clock, font)
+main_menu = MainMenu(font)
+options_menu = OptionsMenu(font)
+pause_menu = PauseMenu(font)
+
+# On ajoute 'font=font' à la fin de l'appel
+run_game_app(
+    screen, 
+    windowed_size, 
+    settings, 
+    main_menu, 
+    options_menu, 
+    pause_menu, 
+    clock, 
+    rebuild_static_layers=rebuild_assets,
+    font=font  # <--- AJOUT CRUCIAL
+)
