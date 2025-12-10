@@ -105,8 +105,7 @@ class VolumeSlider:
 
 
 class MainMenu:
-    def __init__(self, settings, font):
-        self.settings = settings
+    def __init__(self, font):
         self.font = font
         self.buttons = []
         self._create_buttons()
@@ -128,8 +127,7 @@ class MainMenu:
 
 
 class OptionsMenu:
-    def __init__(self, settings, font):
-        self.settings = settings
+    def __init__(self, font):
         self.font = font
         self.volume = pygame.mixer.music.get_volume()
         self.fullscreen = False
@@ -222,7 +220,7 @@ class OptionsMenu:
             windowed_size = screen.get_size()
             try:
                 screen = pygame.display.set_mode(
-                    (self.settings.DEFAULT_WINDOW_WIDTH, self.settings.DEFAULT_WINDOW_HEIGHT),
+                    (settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT),
                     pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF,
                     vsync=1,
                     **display_kwargs
@@ -230,15 +228,15 @@ class OptionsMenu:
             except (pygame.error, TypeError):
                 # Fallback to standard fullscreen if SCALED is unsupported.
                 screen = pygame.display.set_mode(
-                    (self.settings.DEFAULT_WINDOW_WIDTH, self.settings.DEFAULT_WINDOW_HEIGHT),
+                    (settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT),
                     pygame.FULLSCREEN | pygame.DOUBLEBUF,
                     **display_kwargs
                 )
             self.fullscreen = True
 
         # Resize first so scale-dependent assets recompute, then convert surfaces safely.
-        self.settings.resize(*screen.get_size())  # Recompute sizes based on new window.
-        self.settings._convert_surfaces_for_display(screen)
+        settings.resize(*screen.get_size())  # Recompute sizes based on new window.
+        settings._convert_surfaces_for_display(screen)
         main_menu._create_buttons()  # Recenter main menu buttons.
         self.refresh_layout()  # Recenter options buttons/slider.
         pause_menu._create_buttons()  # Recenter pause menu buttons.

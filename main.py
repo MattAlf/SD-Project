@@ -22,8 +22,8 @@ font = pygame.font.SysFont(None, 48)  # Shared font for UI text.
 # Build static layers sized to the current screen.
 settings.initialize_static_layers(screen)
 
-main_menu = MainMenu(settings, font)  # Main menu UI.
-options_menu = OptionsMenu(settings, font)  # Options UI (fullscreen + volume).
+main_menu = MainMenu(font)  # Main menu UI.
+options_menu = OptionsMenu(font)  # Options UI (fullscreen + volume).
 pause_menu = PauseMenu(font)  # Pause overlay UI.
 
 # Delegate outer loop to state manager
