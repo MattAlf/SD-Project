@@ -237,6 +237,11 @@ class Settings:
         text_rect = text_surface.get_rect(topleft=(x, y))
         surface.blit(text_surface, text_rect)
 
+    def draw_kill_counter(self, surface, font, kill_counter, x=10, y=30, color =(0,0,122)):
+        text_surface = font.render(f"Kill: {kill_counter}", True, color)
+        text_rect = text_surface.get_rect(topleft=(x, y))
+        surface.blit(text_surface, text_rect)
+
     def draw_lives(self, surface, player):
         """Draw the player's remaining lives as hearts on the top-right of the screen."""
         if not hasattr(player, "lives"):

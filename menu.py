@@ -284,7 +284,7 @@ class GameOverMenu:
     def _create_buttons(self):
         self.buttons = build_buttons(['Retry', 'Main Menu', 'Exit'], self.font, center_ratio=0.6)
 
-    def draw(self, surface, score):
+    def draw(self, surface, score, kill_counter):
         bg = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())
         surface.blit(bg, (0, 0))
 
@@ -293,8 +293,12 @@ class GameOverMenu:
         surface.blit(title, title_rect)
 
         score_text = self.font.render(f'Score: {score}', True, 'white')
-        score_rect = score_text.get_rect(center=(surface.get_width() // 2, title_rect.bottom + 40))
+        score_rect = score_text.get_rect(center=(surface.get_width() // 2, title_rect.bottom + 60))
         surface.blit(score_text, score_rect)
+
+        kill_counter_text = self.font.render(f'kill: {kill_counter}', True, 'white')
+        kill_counter_rect = kill_counter_text.get_rect(center=(surface.get_width() // 2, (title_rect.bottom + score_rect.top)/2))
+        surface.blit(kill_counter_text, kill_counter_rect)
 
         for b in self.buttons:
             b.draw(surface)
