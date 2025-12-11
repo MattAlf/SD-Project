@@ -18,11 +18,14 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
     spear_group = pygame.sprite.Group()
     shield_pickup_group = pygame.sprite.Group()
     shield_effect_group = pygame.sprite.Group()
+    dragon_group = pygame.sprite.Group()
+    fireball_group = pygame.sprite.Group()
     score = 0
     kill_counter = 0
     Bullet.kill_count = 0
     baddie_add_counter = 0
     platform_add_counter = 0
+    dragon_alive = False
     next_shield_spawn = pygame.time.get_ticks() + random.randint(
         settings.SHIELD_PICKUP_SPAWN_RATE_MIN,
         settings.SHIELD_PICKUP_SPAWN_RATE_MAX,
@@ -92,9 +95,14 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
 
         score += 1  # Increment score every frame as a simple timer.
 
-        # Add new baddies.
+        # Spawn dragon when score reaches 1000
+        if score%1000 == 0 and not dragon_alive:
+            dragon_group.add(Dragon(player))
+            dragon_alive = True
+
+        # Add new baddies (only if dragon hasn't spawned).
         baddie_add_counter += 1
-        if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE:
+        if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE and not dragon_alive:
             baddie_add_counter = 0
             baddie_group.add(Baddies())
 
@@ -118,10 +126,30 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
         player_group.update(events, ground_group, platform_group, spear_group, baddie_group, shield_pickup_group, shield_effect_group)
         baddie_group.update()
         spear_group.update(baddie_group)
+        dragon_group.update(fireball_group, spear_group, score)
+        fireball_group.update()
         background_group.update()
         shield_pickup_group.update()
         shield_effect_group.update()
-        kill_counter = Bullet.kill_count 
+        kill_counter = Bullet.kill_count
+        
+        # Check collisions: fireballs hitting the player
+        hit_fireballs = pygame.sprite.spritecollide(player, fireball_group, True)
+        for fireball in hit_fireballs:
+            player.take_damage()
+        
+        # Check collisions: dragon hitting the player
+        if pygame.sprite.spritecollide(player, dragon_group, False):
+            player.take_damage()
+            # Repousser le joueur
+            if player.rect.centerx < settings.WINDOW_WIDTH // 2:
+                player.position.x -= 20
+            else:
+                player.position.x += 20
+        
+        # Check if dragon is dead and respawn baddies
+        if dragon_alive and len(dragon_group) == 0:
+            dragon_alive = False
 
         # Draw everything.
         background_group.draw(screen)
@@ -133,6 +161,8 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
         baddie_group.draw(screen)
         platform_group.draw(screen)
         spear_group.draw(screen)
+        dragon_group.draw(screen)
+        fireball_group.draw(screen)
         ground_group.draw(screen)
         settings.draw_lives(screen, player)
 

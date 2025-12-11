@@ -284,12 +284,92 @@ class ShieldEffect(pygame.sprite.Sprite):
         if not self.player.has_shield:
             self.kill()
 
+class Dragon(pygame.sprite.Sprite):
+    def __init__(self, player):
+        super().__init__()
+        # Image et affichage
+        self.image = pygame.transform.scale(settings.DRAGON_IMAGE, (settings.DRAGON_WIDTH, settings.DRAGON_HEIGHT))
+        self.rect = self.image.get_rect()
+        self.rect.centerx = settings.WINDOW_WIDTH // 2
+        self.rect.top = 50  # Haut de l'écran
+        
+        # Vitesse de vol (haut/bas)
+        self.speed_y = 2
+        self.direction_y = 1  # 1 pour bas, -1 pour haut
+        
+        # Joueur pour ciblage
+        self.player = player
+        
+        # Tir de boules de feu
+        self.attack_cooldown = settings.DRAGON_ATTACK_COOLDOWN  # À définir dans settings
+        self.last_attack_time = 0
+        
+        # Santé du dragon
+        self.health = 3
+        
+    def update(self, fireball_group, spear_group, score):
+        current_time = pygame.time.get_ticks()
+        self.score = score
+        # Mouvement vertical (va et vient dans la partie supérieure)
+        self.rect.y += self.speed_y * self.direction_y
+        
+        # Rebond quand atteint les limites
+        if self.rect.top <= 30:
+            self.direction_y = 1
+        elif self.rect.bottom >= settings.WINDOW_HEIGHT // 2:  # Limite inférieure
+            self.direction_y = -1
+        
+        # Tirer des boules de feu vers le joueur
+        if current_time - self.last_attack_time > self.attack_cooldown:
+            self.last_attack_time = current_time
+            
+            # Calculer la direction vers le joueur
+            dx = self.player.rect.centerx - self.rect.centerx
+            dy = self.player.rect.centery - self.rect.centery
+            
+            # Créer une boule de feu
+            fireball = Fireball(self.rect.centerx, self.rect.centery, dx, dy, settings.FIREBALL_IMAGE, score)
+            fireball_group.add(fireball)
+        
+        # Vérifier les collisions avec les spears
+        hit_spears = pygame.sprite.spritecollide(self, spear_group, True)
+        for spear in hit_spears:
+            self.health -= 1
+            if self.health <= 0:
+                self.kill()
+
+
+class Fireball(pygame.sprite.Sprite):
+    def __init__(self, position_x, position_y, direction_x, direction_y, fireball_image, score):
+        super().__init__()
+        # Redimensionner l'image
+        self.image = pygame.transform.scale(fireball_image, (settings.FIREBALL_SIZE, settings.FIREBALL_SIZE))
+        self.rect = self.image.get_rect()
+        self.rect.center = (position_x, position_y)
+        
+
+        # Vitesse (normaliser la direction)
+        magnitude = (direction_x**2 + direction_y**2)**0.5
+        if magnitude > 0:
+            self.speed_x = (direction_x / magnitude) * settings.FIREBALL_SPEED * int(score/1000)
+            self.speed_y = (direction_y / magnitude) * settings.FIREBALL_SPEED * int(score/1000)
+        else:
+            self.speed_x = self.speed_y = 0
+    
+    def update(self):
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+        
+        # Supprimer si sortie de l'écran
+        if (self.rect.right < 0 or self.rect.left > settings.WINDOW_WIDTH or 
+            self.rect.bottom < 0 or self.rect.top > settings.WINDOW_HEIGHT):
+            self.kill()
 
 class Baddies(Entity):
     def __init__(self):
         image = settings.BADDIE_IMAGE
         self.size = random.randint(settings.BADDIE_MIN_SIZE, settings.BADDIE_MAX_SIZE)
-        super().__init__(image, self.size, self.size)
+        super().__init__(image, self.size* 2, self.size)
         self.rect.left = settings.WINDOW_WIDTH
         self.rect.bottom = random.randint(0, settings.WINDOW_HEIGHT - self.size)
         self.speed = random.randint(settings.BADDIE_MIN_SPEED, settings.BADDIE_MAX_SPEED)
