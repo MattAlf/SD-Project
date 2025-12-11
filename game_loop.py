@@ -3,7 +3,7 @@
 import random
 import pygame
 from pygame.locals import *
-from entity import Player, Platform, Baddies, ShieldPickup
+from entity import *
 
 
 def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over_sound):
@@ -19,6 +19,8 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
     shield_pickup_group = pygame.sprite.Group()
     shield_effect_group = pygame.sprite.Group()
     score = 0
+    kill_counter = 0
+    Bullet.kill_count = 0
     baddie_add_counter = 0
     platform_add_counter = 0
     next_shield_spawn = pygame.time.get_ticks() + random.randint(
@@ -119,10 +121,12 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
         background_group.update()
         shield_pickup_group.update()
         shield_effect_group.update()
+        kill_counter = Bullet.kill_count 
 
         # Draw everything.
         background_group.draw(screen)
         settings.draw_score(screen, font, score)
+        settings.draw_kill_counter(screen, font, kill_counter)
         shield_pickup_group.draw(screen)
         screen.blit(player.image, player.full_image_rect)
         shield_effect_group.draw(screen)
@@ -137,11 +141,12 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
             fps_text = fps_font.render(f"{int(fps_clock.get_fps())} FPS", True, (0, 0, 0))
             last_fps_blit = now_ticks
         if fps_text:
-            screen.blit(fps_text, (10, 30))
+            screen.blit(fps_text, (10, 60))
 
         pygame.display.update()  # Present frame.
 
         if player.dead:
+            score += 50 * kill_counter
             break
 
         fps_clock.tick(settings.FPS)  # Control FPS inside game loop.
@@ -168,7 +173,7 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
                 pygame.quit()
                 raise SystemExit
 
-        game_over_menu.draw(screen, score)
+        game_over_menu.draw(screen, score, kill_counter)
         pygame.display.update()
         fps_clock.tick(settings.FPS)
 

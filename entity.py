@@ -225,6 +225,8 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
+    kill_count = 0  # Add this class attribute
+    
     def __init__(self, position_x, position_y, direction, spear_image):
         super().__init__()
         original_image = spear_image
@@ -248,6 +250,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(self, baddie_group, True):
             self.kill()
+            Bullet.kill_count += 1             
 
 
 class ShieldPickup(pygame.sprite.Sprite):
