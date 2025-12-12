@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import *
 from settings import settings
 
-BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING = 260, 45, 20
+BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING, PANEL_SPACING = 260, 45, 20, 10
 BUTTON_BASE = (20, 20, 20, 180)
 BUTTON_BORDER = (255, 255, 255, 180)
 BUTTON_TEXT_COLOR = (255, 255, 255, 255)
@@ -153,43 +153,14 @@ class OptionsMenu:
         background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit menu art to window.
         surface.blit(background, (0, 0))
 
-        # ---- Music Panel ----
-        self._draw_labeled_slider(surface,
-                                  label=f"Music: {int(self.music_volume * 100)}%",
-                                  slider=self.music_slider)
-
-        # ---- SFX Panel ----
-        self._draw_labeled_slider(surface,
-                                  label=f"SFX: {int(self.sound_effects_volume * 100)}%",
-                                  slider=self.sound_effects_slider)
-
         # Draw fullscreen + back buttons
         for button in self.buttons:
             button.draw(surface)
 
-    def _draw_labeled_slider(self, surface, label, slider):
-        """Draw a 'Volume: 50%' box above a slider."""
-        if not slider:
-            return
-
-        panel_w, panel_h = 260, 45
-        panel_surface = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
-
-        base_color = (20, 20, 20, 180)
-        border_color = (255, 255, 255, 180)
-        pygame.draw.rect(panel_surface, base_color, panel_surface.get_rect(), border_radius=8)
-        pygame.draw.rect(panel_surface, border_color, panel_surface.get_rect(),
-                         width=2, border_radius=8)
-
-        text_surf = self.font.render(label, True, "white")
-        text_rect = text_surf.get_rect(center=panel_surface.get_rect().center)
-        panel_surface.blit(text_surf, text_rect)
-
-        panel_rect = panel_surface.get_rect(center=(slider.rect.centerx,
-                                                    slider.rect.top - 40))
-        surface.blit(panel_surface, panel_rect)
-
-        slider.draw(surface)
+        self.sound_effects_slider.draw(surface)
+        self.sound_effects_panel[0].draw(surface)
+        self.music_slider.draw(surface)
+        self.music_panel[0].draw(surface)
 
     def handle_event(self, event):
         # --- Handle music slider ---
@@ -197,6 +168,8 @@ class OptionsMenu:
             self.music_volume = self.music_slider.value
             pygame.mixer.music.set_volume(self.music_volume)
             settings.music_volume = self.music_volume
+            
+            return None
 
         # --- Handle SFX slider ---
         if self.sound_effects_slider.handle_event(event):
@@ -206,6 +179,8 @@ class OptionsMenu:
             # Apply new volume to all SFX
             for sound in settings.ALL_SOUND_EFFECTS:
                 sound.set_volume(self.sound_effects_volume)
+            
+            return None
 
         # Escape → back
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -224,18 +199,27 @@ class OptionsMenu:
 
     def refresh_layout(self):
         self.buttons = build_buttons(['Fullscreen', 'Back'], self.font)
+        # Push buttons down to give slider more breathing room.
+        self.buttons_total_height = (len(self.buttons) * BUTTON_HEIGHT) + ((len(self.buttons) - 1) * BUTTON_SPACING)
         for button in self.buttons:
-            button.rect.y += 100  # Push buttons down to give slider more breathing room.
+            button.rect.y += self.buttons_total_height // 2 + BUTTON_SPACING
 
-        # --- create both sliders ---
-        screen_w, screen_h = pygame.display.get_surface().get_size()
-        # Music slider at upper-middle
-        self.music_slider = VolumeSlider(screen_w // 2, screen_h // 2 - 80)
-        self.music_slider._set_value(self.music_volume)# Sync slider knob to current volume.
+        # --- create both sliders and panels ---
+        screen_width, screen_height = pygame.display.get_surface().get_size()
 
         # SFX slider under it
-        self.sound_effects_slider = VolumeSlider(screen_w // 2, screen_h // 2 + 10)
+        self.sound_effects_slider = VolumeSlider(screen_width // 2, screen_height // 2)
         self.sound_effects_slider._set_value(self.sound_effects_volume)# Sync slider knob to current volume.
+
+        self.sound_effects_panel = build_buttons([f"Sounds: {int(self.sound_effects_volume * 100)}%"], self.font)
+        self.sound_effects_panel[0].rect.bottom = self.sound_effects_slider.rect.top - PANEL_SPACING
+        
+        # Music slider at upper-middle
+        self.music_slider = VolumeSlider(screen_width // 2, (screen_height // 2) - 90)
+        self.music_slider._set_value(self.music_volume)# Sync slider knob to current volume.
+
+        self.music_panel = build_buttons([f"Music: {int(self.music_volume * 100)}%"], self.font)
+        self.music_panel[0].rect.bottom = self.music_slider.rect.top - PANEL_SPACING
 
     def toggle_fullscreen(self, screen, windowed_size, main_menu, pause_menu, game_over_menu):
         """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""

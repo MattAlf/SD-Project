@@ -121,7 +121,7 @@ class Settings:
 
         self._base_baddie_rate = 20  # Base spawn cadence for enemies.
         self._base_platform_rate = 60  # Base spawn cadence for platforms.
-        self.PLAYER_STARTING_LIVES = 10
+        self.PLAYER_STARTING_LIVES = 3
         self.PLAYER_INVULNERABILITY_TIME = 2000  # ms
         self.SHIELD_DURATION_TIME = 5000  # ms
         self.SHIELD_PICKUP_SPAWN_RATE_MIN = 10000
