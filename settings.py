@@ -46,9 +46,21 @@ class Settings:
             pygame.image.load(assets_dir / "background_layers/7_ground.png"),
             pygame.image.load(assets_dir / "background_layers/8_plant.png"),
         ]
+
+        # Music and sound effects
+        self.music_volume = 0.5
+        self.sound_effects_volume = 0.5
+
         self.GAME_OVER_SOUND = pygame.mixer.Sound(assets_dir / "gameover.wav")
+        self.ALL_SOUND_EFFECTS = [self.GAME_OVER_SOUND]  # filled later with your sounds
+
+        for sound in self.ALL_SOUND_EFFECTS:
+            sound.set_volume(self.sound_effects_volume)
+
         self.BACKGROUND_MUSIC_PATH = assets_dir / "background.mid"
         pygame.mixer.music.load(self.BACKGROUND_MUSIC_PATH)
+
+
 
         # Preload the animated player sprites for reuse.
         self.PLAYER_IMAGES = {

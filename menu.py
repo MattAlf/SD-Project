@@ -4,25 +4,28 @@ import pygame
 from pygame.locals import *
 from settings import settings
 
-BUTTON_W, BUTTON_H, BUTTON_SPACING = 260, 45, 20
-BTN_BASE = (20, 20, 20, 180)
-BTN_BORDER = (255, 255, 255, 180)
+BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING = 260, 45, 20
+BUTTON_BASE = (20, 20, 20, 180)
+BUTTON_BORDER = (255, 255, 255, 180)
+BUTTON_TEXT_COLOR = (255, 255, 255, 255)
 
 
 def build_buttons(labels, font, center_ratio=0.5):
     """Return Buttons centered in the current window."""
-    screen_w, screen_h = pygame.display.get_surface().get_size()
-    total_h = len(labels) * BUTTON_H + (len(labels) - 1) * BUTTON_SPACING
-    x = screen_w // 2 - BUTTON_W // 2
-    y_start = int(screen_h * center_ratio - total_h // 2)
-    return [
-        Button(
-            text,
-            (x, y_start + i * (BUTTON_H + BUTTON_SPACING), BUTTON_W, BUTTON_H),
-            font,
-        )
-        for i, text in enumerate(labels)
-    ]
+    screen_width, screen_height = pygame.display.get_surface().get_size()
+    total_height = len(labels) * BUTTON_HEIGHT + (len(labels) - 1) * BUTTON_SPACING
+    x_left = screen_width // 2 - BUTTON_WIDTH // 2
+    y_start = int((screen_height * center_ratio) - (total_height // 2))
+    button_list = []
+    for i, text in enumerate(labels):
+        button_list.append(
+            Button(
+                text,
+                (x_left, y_start + (i * (BUTTON_HEIGHT + BUTTON_SPACING)), BUTTON_WIDTH, BUTTON_HEIGHT),
+                font
+                )
+            )
+    return button_list
 
 
 class Button:
@@ -32,13 +35,13 @@ class Button:
         self.font = font
 
     def draw(self, surface):
-        btn_surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
-        pygame.draw.rect(btn_surface, BTN_BASE, btn_surface.get_rect(), border_radius=8)
-        pygame.draw.rect(btn_surface, BTN_BORDER, btn_surface.get_rect(), width=2, border_radius=8)
-        text_surf = self.font.render(self.text, True, 'white')
-        text_rect = text_surf.get_rect(center=btn_surface.get_rect().center)
-        btn_surface.blit(text_surf, text_rect)
-        surface.blit(btn_surface, self.rect.topleft)
+        button_surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(button_surface, BUTTON_BASE, button_surface.get_rect(), border_radius=8)
+        pygame.draw.rect(button_surface, BUTTON_BORDER, button_surface.get_rect(), width=2, border_radius=8)
+        text_surf = self.font.render(self.text, True, BUTTON_TEXT_COLOR)
+        text_rect = text_surf.get_rect(center=button_surface.get_rect().center)
+        button_surface.blit(text_surf, text_rect)
+        surface.blit(button_surface, self.rect.topleft)
 
     def is_clicked(self, event):
         return event.type == MOUSEBUTTONUP and event.button == 1 and self.rect.collidepoint(event.pos)
@@ -55,11 +58,11 @@ class VolumeSlider:
         self._update_knob_position()
 
     def _update_knob_position(self):
-        knob_x = self.rect.left + int(self.value * self.rect.width)
-        self.knob_center = (knob_x, self.rect.centery)
+        knob_centerx = self.rect.left + int(self.value * self.rect.width)
+        self.knob_center = (knob_centerx, self.rect.centery)
 
-    def set_value(self, value: float):
-        self.value = max(0.0, min(1.0, value))
+    def _set_value(self, new_volume_value):
+        self.value = max(0.0, min(1.0, new_volume_value))
         self._update_knob_position()
 
     def handle_event(self, event):
@@ -77,31 +80,38 @@ class VolumeSlider:
         return changed
 
     def _set_value_from_pos(self, x_pos):
-        rel = (x_pos - self.rect.left) / self.rect.width
-        self.set_value(rel)
+        new_volume_value = (x_pos - self.rect.left) / self.rect.width
+        self._set_value(new_volume_value)
 
     def draw(self, surface):
         track_color = (40, 40, 40, 180)
         fill_color = (200, 200, 200, 220)
         knob_color = (255, 255, 255, 255)
         border_color = (255, 255, 255, 180)
+        filling_height = 6
+        filling_x_offset = 4
 
-        surf = pygame.Surface(self.rect.size, pygame.SRCALPHA)
-        pygame.draw.rect(surf, track_color, surf.get_rect(), border_radius=8)
+        slider_surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(slider_surface, track_color, slider_surface.get_rect(), border_radius=8)
         pygame.draw.rect(
-            surf,
+            slider_surface,
             fill_color,
-            pygame.Rect(4, self.rect.height // 2 - 3, max(0, int(self.value * (self.rect.width - 8))), 6),
-            border_radius=4,
+            pygame.Rect(
+                filling_x_offset,
+                (self.rect.height // 2) - (filling_height // 2),
+                int(self.value * self.rect.width),
+                filling_height
+            ),
+            border_radius=4
         )
-        pygame.draw.rect(surf, border_color, surf.get_rect(), width=2, border_radius=8)
+        pygame.draw.rect(slider_surface, border_color, slider_surface.get_rect(), width=2, border_radius=8)
         pygame.draw.circle(
-            surf,
+            slider_surface,
             knob_color,
-            (self.knob_center[0] - self.rect.left, self.knob_center[1] - self.rect.top),
+            ((self.knob_center[0] - self.rect.left), (self.knob_center[1] - self.rect.top)),
             self.knob_radius,
         )
-        surface.blit(surf, self.rect.topleft)
+        surface.blit(slider_surface, self.rect.topleft)
 
 
 class MainMenu:
@@ -114,14 +124,14 @@ class MainMenu:
         self.buttons = build_buttons(['Start Game', 'Options', 'Exit'], self.font)
 
     def draw(self, surface):
-        bg = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit background to window.
-        surface.blit(bg, (0, 0))  # Paint background.
-        for b in self.buttons:  # Draw menu buttons.
-            b.draw(surface)
+        background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit background to window.
+        surface.blit(background, (0, 0))  # Paint background.
+        for button in self.buttons:  # Draw menu buttons.
+            button.draw(surface)
 
     def handle_event(self, event):
-        for i, b in enumerate(self.buttons):
-            if b.is_clicked(event):
+        for i, button in enumerate(self.buttons):
+            if button.is_clicked(event):
                 return i
         return None
 
@@ -129,68 +139,103 @@ class MainMenu:
 class OptionsMenu:
     def __init__(self, font):
         self.font = font
-        self.volume = pygame.mixer.music.get_volume()
+        self.music_volume = pygame.mixer.music.get_volume()
+        self.sound_effects_volume = settings.sound_effects_volume
+
         self.fullscreen = False
 
         self.buttons = []
-        self.slider = None
+        self.music_slider = None
+        self.sound_effects_slider = None
         self.refresh_layout()
 
     def draw(self, surface):
-        bg = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit menu art to window.
-        surface.blit(bg, (0, 0))
+        background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit menu art to window.
+        surface.blit(background, (0, 0))
 
-        if self.slider:  # Volume label + slider.
-            panel_w, panel_h = 260, 45
-            panel_surface = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
-            base_color = (20, 20, 20, 180)
-            border_color = (255, 255, 255, 180)
-            pygame.draw.rect(panel_surface, base_color, panel_surface.get_rect(), border_radius=8)
-            pygame.draw.rect(panel_surface, border_color, panel_surface.get_rect(), width=2, border_radius=8)
+        # ---- Music Panel ----
+        self._draw_labeled_slider(surface,
+                                  label=f"Music: {int(self.music_volume * 100)}%",
+                                  slider=self.music_slider)
 
-            vol_text = self.font.render(f'Volume: {int(self.volume * 100)}%', True, 'white')
-            vol_rect = vol_text.get_rect(center=panel_surface.get_rect().center)
-            panel_surface.blit(vol_text, vol_rect)
+        # ---- SFX Panel ----
+        self._draw_labeled_slider(surface,
+                                  label=f"SFX: {int(self.sound_effects_volume * 100)}%",
+                                  slider=self.sound_effects_slider)
 
-            panel_rect = panel_surface.get_rect(center=(self.slider.rect.centerx, self.slider.rect.top - 35))
-            surface.blit(panel_surface, panel_rect)
-            self.slider.draw(surface)
+        # Draw fullscreen + back buttons
+        for button in self.buttons:
+            button.draw(surface)
 
-        for b in self.buttons:  # Draw buttons (fullscreen/back).
-            b.draw(surface)
+    def _draw_labeled_slider(self, surface, label, slider):
+        """Draw a 'Volume: 50%' box above a slider."""
+        if not slider:
+            return
+
+        panel_w, panel_h = 260, 45
+        panel_surface = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+
+        base_color = (20, 20, 20, 180)
+        border_color = (255, 255, 255, 180)
+        pygame.draw.rect(panel_surface, base_color, panel_surface.get_rect(), border_radius=8)
+        pygame.draw.rect(panel_surface, border_color, panel_surface.get_rect(),
+                         width=2, border_radius=8)
+
+        text_surf = self.font.render(label, True, "white")
+        text_rect = text_surf.get_rect(center=panel_surface.get_rect().center)
+        panel_surface.blit(text_surf, text_rect)
+
+        panel_rect = panel_surface.get_rect(center=(slider.rect.centerx,
+                                                    slider.rect.top - 40))
+        surface.blit(panel_surface, panel_rect)
+
+        slider.draw(surface)
 
     def handle_event(self, event):
-        if self.slider and self.slider.handle_event(event):
-            self.volume = self.slider.value
-            pygame.mixer.music.set_volume(self.volume)
-            return None
+        # --- Handle music slider ---
+        if self.music_slider.handle_event(event):
+            self.music_volume = self.music_slider.value
+            pygame.mixer.music.set_volume(self.music_volume)
+            settings.music_volume = self.music_volume
 
-        if event.type == KEYDOWN and event.key == K_ESCAPE:
+        # --- Handle SFX slider ---
+        if self.sound_effects_slider.handle_event(event):
+            self.sound_effects_volume = self.sound_effects_slider.value
+            settings.sound_effects_volume = self.sound_effects_volume
+
+            # Apply new volume to all SFX
+            for sound in settings.ALL_SOUND_EFFECTS:
+                sound.set_volume(self.sound_effects_volume)
+
+        # Escape → back
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             return "BACK"
 
+        # Regular buttons
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
-                # Fullscreen button
                 if i == 0:
-                    # Return an action to main so main can safely change display mode
                     return "TOGGLE_FULLSCREEN"
-
-                # Volume -
-                # Back
                 elif i == 1:
                     return "BACK"
 
         return None
 
+
     def refresh_layout(self):
         self.buttons = build_buttons(['Fullscreen', 'Back'], self.font)
-        for b in self.buttons:
-            b.rect.y += 40  # Push buttons down to give slider more breathing room.
+        for button in self.buttons:
+            button.rect.y += 100  # Push buttons down to give slider more breathing room.
 
+        # --- create both sliders ---
         screen_w, screen_h = pygame.display.get_surface().get_size()
-        slider_y = max(140, screen_h // 2 - 80)  # Keep slider near upper-middle.
-        self.slider = VolumeSlider(screen_w // 2, slider_y)
-        self.slider.set_value(self.volume)  # Sync slider knob to current volume.
+        # Music slider at upper-middle
+        self.music_slider = VolumeSlider(screen_w // 2, screen_h // 2 - 80)
+        self.music_slider._set_value(self.music_volume)# Sync slider knob to current volume.
+
+        # SFX slider under it
+        self.sound_effects_slider = VolumeSlider(screen_w // 2, screen_h // 2 + 10)
+        self.sound_effects_slider._set_value(self.sound_effects_volume)# Sync slider knob to current volume.
 
     def toggle_fullscreen(self, screen, windowed_size, main_menu, pause_menu, game_over_menu):
         """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
@@ -254,8 +299,8 @@ class PauseMenu:
         self.buttons = build_buttons(['Resume', 'Main Menu', 'Exit Game'], self.font, center_ratio=0.6)
 
     def draw(self, surface):
-        bg = pygame.transform.scale(settings.PAUSED_IMAGE, surface.get_size())
-        surface.blit(bg, (0, 0))
+        background = pygame.transform.scale(settings.PAUSED_IMAGE, surface.get_size())
+        surface.blit(background, (0, 0))
 
         for b in self.buttons:
             b.draw(surface)
@@ -285,8 +330,8 @@ class GameOverMenu:
         self.buttons = build_buttons(['Retry', 'Main Menu', 'Exit'], self.font, center_ratio=0.6)
 
     def draw(self, surface, score, kill_counter):
-        bg = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())
-        surface.blit(bg, (0, 0))
+        background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())
+        surface.blit(background, (0, 0))
 
         title = self.font.render('Game Over', True, 'white')
         title_rect = title.get_rect(center=(surface.get_width() // 2, surface.get_height() // 3))
