@@ -6,8 +6,6 @@ from pathlib import Path  # Used to locate asset files relative to this script.
 class Settings:
     """Stores tunable values and scales them to the current screen size."""
 
-    BASE_WIDTH = 1280  # Reference width for scaling.
-    BASE_HEIGHT = 720  # Reference height for scaling.
     DEFAULT_WINDOW_WIDTH = 1280  # Default windowed width.
     DEFAULT_WINDOW_HEIGHT = 720  # Default windowed height.
 
@@ -139,14 +137,14 @@ class Settings:
         self.FIREBALL_SPEED_BASE = 5
 
         # Initialize with the base size; the game will call resize with the actual display size.
-        self.resize(self.BASE_WIDTH, self.BASE_HEIGHT)
+        self.resize(self.DEFAULT_WINDOW_WIDTH, self.DEFAULT_WINDOW_HEIGHT)
 
     def resize(self, width: int, height: int):
         self.WINDOW_WIDTH = int(width)  # Actual window width in pixels.
         self.WINDOW_HEIGHT = int(height)  # Actual window height in pixels.
 
-        scale_x = self.WINDOW_WIDTH / self.BASE_WIDTH  # Horizontal scale ratio.
-        scale_y = self.WINDOW_HEIGHT / self.BASE_HEIGHT  # Vertical scale ratio.
+        scale_x = self.WINDOW_WIDTH / self.DEFAULT_WINDOW_WIDTH  # Horizontal scale ratio.
+        scale_y = self.WINDOW_HEIGHT / self.DEFAULT_WINDOW_HEIGHT  # Vertical scale ratio.
         self.SCALE = min(scale_x, scale_y)  # Use the limiting scale to preserve aspect.
         s = self.SCALE  # Convenience alias.
 
@@ -241,14 +239,14 @@ class Settings:
         try:
             screen = pygame.display.set_mode(
                 (self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
-                pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF,
+                pygame.SCALED | pygame.DOUBLEBUF,
                 vsync=1
             )
         except TypeError:
             # Older pygame versions may not support vsync kwarg; fall back quietly.
             screen = pygame.display.set_mode(
                 (self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
-                pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF
+                pygame.SCALED | pygame.DOUBLEBUF
             )
         self._convert_surfaces_for_display(screen)
         windowed_size = (self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
@@ -284,11 +282,6 @@ class Settings:
         self.background_group, self.ground_group = self.build_static_layers()
         self.background_group.draw(screen)
         self.ground_group.draw(screen)
-
-    def rebuild_static_layers(self, screen):
-        """Rebuild static layers to match current window size."""
-        self.background_group, self.ground_group = self.build_static_layers()
-        return self.background_group, self.ground_group
 
     def _convert_surfaces_for_display(self, screen):
         """Convert all loaded surfaces after a display mode is set (required for convert_alpha)."""

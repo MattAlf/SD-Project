@@ -4,6 +4,7 @@ import random
 import pygame
 from pygame.locals import *
 from entity import *
+from functions import terminate
 
 
 def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over_sound):
@@ -84,8 +85,7 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
                     pygame.mixer.music.stop()
                     return "MAIN_MENU"
                 elif action == "EXIT":
-                    pygame.quit()
-                    raise SystemExit
+                    terminate()
 
         if paused:
             pause_menu.draw(screen)
@@ -206,31 +206,3 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
         game_over_menu.draw(screen, score, kill_counter)
         pygame.display.update()
         fps_clock.tick(settings.FPS)
-
-
-def run_game_app(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock, rebuild_static_layers, run_game_round_fn):
-    """Outer game loop: menu → game round → repeat. Updates screen/window on fullscreen toggle."""
-    from menu import show_main_menu
-    while True:
-        menu_choice, screen, windowed_size = show_main_menu(
-            screen,
-            windowed_size,
-            settings,
-            main_menu,
-            options_menu,
-            pause_menu,
-            game_over_menu,
-            clock,
-            rebuild_static_layers
-        )
-        if menu_choice == "EXIT":
-            import pygame, sys
-            pygame.quit()
-            sys.exit()
-
-        while True:
-            round_result = run_game_round_fn()
-            if round_result == "MAIN_MENU":
-                break
-
-    return screen, windowed_size

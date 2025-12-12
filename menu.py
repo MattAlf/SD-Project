@@ -3,6 +3,7 @@ import sys
 import pygame
 from pygame.locals import *
 from settings import settings
+from functions import terminate
 
 BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING, PANEL_SPACING = 260, 45, 20, 10
 BUTTON_BASE = (20, 20, 20, 180)
@@ -131,9 +132,13 @@ class MainMenu:
     def handle_event(self, event):
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
-                return i
+                if i == 0:
+                    return 'START_GAME'
+                elif i == 1:
+                    return 'OPTIONS'
+                elif i == 2:
+                    return 'EXIT'
         return None
-
 
 class OptionsMenu:
     def __init__(self, font):
@@ -185,15 +190,13 @@ class OptionsMenu:
             return "BACK"
 
         # Regular buttons
-        for i, b in enumerate(self.buttons):
-            if b.is_clicked(event):
+        for i, button in enumerate(self.buttons):
+            if button.is_clicked(event):
                 if i == 0:
                     return "TOGGLE_FULLSCREEN"
                 elif i == 1:
                     return "BACK"
-
         return None
-
 
     def refresh_layout(self):
         self.buttons = build_buttons(['Fullscreen', 'Back'], self.font)
@@ -221,43 +224,35 @@ class OptionsMenu:
 
     def toggle_fullscreen(self, screen, windowed_size, main_menu, pause_menu, game_over_menu):
         """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
-        display_kwargs = {}
-        try:
-            # Keep fullscreen/windowed transitions on the monitor that currently hosts the window.
-            display_kwargs["display"] = pygame.display.get_window_display_index()
-        except (pygame.error, AttributeError):
-            pass  # Older pygame/SDL versions may not support per-display window queries.
-
         if self.fullscreen:
+            # Switch to windowed
             try:
                 screen = pygame.display.set_mode(
                     windowed_size,
-                    pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF,
-                    vsync=1,
-                    **display_kwargs
+                    pygame.SCALED | pygame.DOUBLEBUF,
+                    vsync=1
                 )
-            except TypeError:
+            except pygame.error:
+                # Fallback: minimal window
                 screen = pygame.display.set_mode(
                     windowed_size,
-                    pygame.RESIZABLE | pygame.SCALED | pygame.DOUBLEBUF,
-                    **display_kwargs
+                    pygame.SCALED | pygame.DOUBLEBUF
                 )
             self.fullscreen = False
         else:
+            # Switch to fullscreen
             windowed_size = screen.get_size()
             try:
                 screen = pygame.display.set_mode(
-                    (settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT),
+                    windowed_size,
                     pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF,
-                    vsync=1,
-                    **display_kwargs
+                    vsync=1
                 )
-            except (pygame.error, TypeError):
-                # Fallback to standard fullscreen if SCALED is unsupported.
+            except pygame.error:
+                # Fallback: plain fullscreen
                 screen = pygame.display.set_mode(
-                    (settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT),
-                    pygame.FULLSCREEN | pygame.DOUBLEBUF,
-                    **display_kwargs
+                    windowed_size,
+                    pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF
                 )
             self.fullscreen = True
 
@@ -269,7 +264,6 @@ class OptionsMenu:
         pause_menu._create_buttons()  # Recenter pause menu buttons.
         game_over_menu.refresh_layout()  # Recenter game over menu buttons.
         return screen, windowed_size
-
 
 class PauseMenu:
     def __init__(self, font):
@@ -295,9 +289,9 @@ class PauseMenu:
             if b.is_clicked(event):
                 if i == 0:
                     return "RESUME"
-                if i == 1:
+                elif i == 1:
                     return "MAIN_MENU"
-                if i == 2:
+                elif i == 2:
                     return "EXIT"
         return None
 
@@ -348,34 +342,30 @@ class GameOverMenu:
         self._create_buttons()
 
 
-def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock, on_fullscreen_toggled):
+def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock):
     """Main menu loop; exits when the user starts the game or quits."""
     pygame.mixer.music.stop()
     current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
     while True:
         for event in pygame.event.get():  # Poll menu events.
             if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
+                terminate()
 
             if current_menu == "MAIN":
                 result = main_menu.handle_event(event)
-                if result == 0:
+                if result == 'START_GAME':
                     return "START", screen, windowed_size
-                elif result == 1:
+                elif result == 'OPTIONS':
                     current_menu = "OPTIONS"
-                elif result == 2:
-                    pygame.quit()
-                    sys.exit()
+                elif result == 'EXIT':
+                    terminate()
 
             elif current_menu == "OPTIONS":
                 result = options_menu.handle_event(event)
-
                 if result == "TOGGLE_FULLSCREEN":
                     screen, windowed_size = options_menu.toggle_fullscreen(
                         screen, windowed_size, main_menu, pause_menu, game_over_menu
                     )
-                    on_fullscreen_toggled()
                 elif result == "BACK":
                     current_menu = "MAIN"
 
@@ -388,16 +378,7 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
         clock.tick(settings.FPS)
 
 
-def toggle_fullscreen(screen, windowed_size, options_menu, main_menu, pause_menu, game_over_menu, rebuild_static_layers):
-    """Toggle fullscreen/windowed modes, refresh UI layout, and rebuild static layers."""
-    screen, windowed_size = options_menu.toggle_fullscreen(
-        screen, windowed_size, main_menu, pause_menu, game_over_menu
-    )
-    rebuild_static_layers()
-    return screen, windowed_size
-
-
-def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock, rebuild_static_layers):
+def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock):
     """
     Wrapper around run_main_menu for compatibility; returns (choice, screen, windowed_size).
     """
@@ -409,6 +390,5 @@ def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pau
         options_menu,
         pause_menu,
         game_over_menu,
-        clock,
-        rebuild_static_layers
+        clock
     )
