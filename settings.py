@@ -34,6 +34,8 @@ class Settings:
         self.BLUE_HEART_IMAGE = pygame.image.load(assets_dir / "blue_heart.png")
         self.SHIELD_EFFECT_IMAGE = pygame.image.load(assets_dir / "shield_effect.png")
         self.SHIELD_PICKUP_IMAGE = pygame.image.load(assets_dir / "shield_pickup.png")
+        self.DRAGON_IMAGE = pygame.image.load(assets_dir / "dragon.png")
+        self.FIREBALL_IMAGE = pygame.image.load(assets_dir / "fire_arrow.png")
         self.BACKGROUND_LAYERS = [
             pygame.image.load(assets_dir / "background_layers/1_sky.png"),
             pygame.image.load(assets_dir / "background_layers/2_clouds.png"),
@@ -107,7 +109,7 @@ class Settings:
 
         self._base_baddie_rate = 20  # Base spawn cadence for enemies.
         self._base_platform_rate = 60  # Base spawn cadence for platforms.
-        self.PLAYER_STARTING_LIVES = 3
+        self.PLAYER_STARTING_LIVES = 10
         self.PLAYER_INVULNERABILITY_TIME = 2000  # ms
         self.SHIELD_DURATION_TIME = 5000  # ms
         self.SHIELD_PICKUP_SPAWN_RATE_MIN = 10000
@@ -118,6 +120,11 @@ class Settings:
         self.PLAYER_LIVES_MARGIN_X_BASE = 10
         self.PLAYER_LIVES_MARGIN_Y_BASE = 10
         self.PLAYER_LIVES_HEART_SPACING_BASE = 5
+        self.DRAGON_WIDTH_BASE = 200
+        self.DRAGON_HEIGHT_BASE = 200
+        self.DRAGON_ATTACK_COOLDOWN = 1000  # ms
+        self.FIREBALL_SIZE_BASE = 30
+        self.FIREBALL_SPEED_BASE = 5
 
         # Initialize with the base size; the game will call resize with the actual display size.
         self.resize(self.BASE_WIDTH, self.BASE_HEIGHT)
@@ -152,8 +159,8 @@ class Settings:
         self.VERTICAL_ACCELERATION = max(0.5, 1 * s)
         self._build_scaled_player_images(self.PLAYER_HEIGHT)
 
-        self.BADDIE_MIN_SIZE = max(20, int(30 * s))
-        self.BADDIE_MAX_SIZE = max(self.BADDIE_MIN_SIZE, int(40 * s))
+        self.BADDIE_MIN_SIZE = max(40, int(60 * s))
+        self.BADDIE_MAX_SIZE = max(self.BADDIE_MIN_SIZE, int(80 * s))
         self.BADDIE_MIN_SPEED = max(2, int(2 * s))
         self.BADDIE_MAX_SPEED = max(self.BADDIE_MIN_SPEED + 1, int(8 * s))
 
@@ -163,6 +170,10 @@ class Settings:
         self.PLAYER_LIVES_MARGIN_X = max(6, int(self.PLAYER_LIVES_MARGIN_X_BASE * s))
         self.PLAYER_LIVES_MARGIN_Y = max(6, int(self.PLAYER_LIVES_MARGIN_Y_BASE * s))
         self.PLAYER_LIVES_HEART_SPACING = max(2, int(self.PLAYER_LIVES_HEART_SPACING_BASE * s))
+        self.DRAGON_WIDTH = max(100, int(self.DRAGON_WIDTH_BASE * s))
+        self.DRAGON_HEIGHT = max(100, int(self.DRAGON_HEIGHT_BASE * s))
+        self.FIREBALL_SIZE = max(15, int(self.FIREBALL_SIZE_BASE * s))
+        self.FIREBALL_SPEED = max(3, int(self.FIREBALL_SPEED_BASE * s))
 
         self.BACKGROUND_SCROLL_SPEED = max(1, int(1 * s))
         base_bg_speed = max(1, int(self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR * max(1, s)))
@@ -287,6 +298,8 @@ class Settings:
             self.BLUE_HEART_IMAGE = self.BLUE_HEART_IMAGE.convert_alpha()
             self.SHIELD_EFFECT_IMAGE = self.SHIELD_EFFECT_IMAGE.convert_alpha()
             self.SHIELD_PICKUP_IMAGE = self.SHIELD_PICKUP_IMAGE.convert_alpha()
+            self.DRAGON_IMAGE = self.DRAGON_IMAGE.convert_alpha()
+            self.FIREBALL_IMAGE = self.FIREBALL_IMAGE.convert_alpha()
         except pygame.error:
             # If conversion fails, skip to avoid crashing (e.g., when no surface exists).
             return

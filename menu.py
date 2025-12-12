@@ -41,7 +41,7 @@ class Button:
         surface.blit(btn_surface, self.rect.topleft)
 
     def is_clicked(self, event):
-        return event.type == MOUSEBUTTONDOWN and event.button == 1 and self.rect.collidepoint(event.pos)
+        return event.type == MOUSEBUTTONUP and event.button == 1 and self.rect.collidepoint(event.pos)
 
 
 # Drag-able horizontal volume slider.
