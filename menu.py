@@ -113,7 +113,6 @@ class VolumeSlider:
         )
         surface.blit(slider_surface, self.rect.topleft)
 
-
 class MainMenu:
     def __init__(self, font):
         self.font = font
@@ -168,18 +167,17 @@ class OptionsMenu:
             self.music_volume = self.music_slider.value
             pygame.mixer.music.set_volume(self.music_volume)
             settings.music_volume = self.music_volume
-            
+            self.music_panel[0].text = f"Music: {int(self.music_volume * 100)}%"
             return None
 
         # --- Handle SFX slider ---
         if self.sound_effects_slider.handle_event(event):
             self.sound_effects_volume = self.sound_effects_slider.value
             settings.sound_effects_volume = self.sound_effects_volume
-
+            self.sound_effects_panel[0].text = f"Sounds: {int(self.sound_effects_volume * 100)}%"
             # Apply new volume to all SFX
             for sound in settings.ALL_SOUND_EFFECTS:
                 sound.set_volume(self.sound_effects_volume)
-            
             return None
 
         # Escape → back
