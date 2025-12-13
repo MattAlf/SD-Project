@@ -9,7 +9,23 @@ BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING, PANEL_SPACING = 260, 45, 20, 10
 BUTTON_BASE = (20, 20, 20, 180)
 BUTTON_BORDER = (255, 255, 255, 180)
 BUTTON_TEXT_COLOR = (255, 255, 255, 255)
+HELP_BUTTON_SIZE = 40
+HELP_BUTTON_MARGIN = 12
 
+def build_help_button(font):
+    screen_width, _ = pygame.display.get_surface().get_size()
+    rect = pygame.Rect(
+        screen_width - HELP_BUTTON_SIZE - HELP_BUTTON_MARGIN,
+        HELP_BUTTON_MARGIN,
+        HELP_BUTTON_SIZE,
+        HELP_BUTTON_SIZE
+    )
+    return Button(
+        text = "",
+        rect = rect,
+        font = font,
+        icon = settings.HELP_ICON
+    )
 
 def build_buttons(labels, font, center_ratio=0.5):
     """Return Buttons centered in the current window."""
@@ -30,18 +46,24 @@ def build_buttons(labels, font, center_ratio=0.5):
 
 
 class Button:
-    def __init__(self, text, rect, font):
+    def __init__(self, text, rect, font, icon=None):
         self.text = text
         self.rect = pygame.Rect(rect)
         self.font = font
+        self.icon = icon
 
     def draw(self, surface):
         button_surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         pygame.draw.rect(button_surface, BUTTON_BASE, button_surface.get_rect(), border_radius=8)
         pygame.draw.rect(button_surface, BUTTON_BORDER, button_surface.get_rect(), width=2, border_radius=8)
-        text_surf = self.font.render(self.text, True, BUTTON_TEXT_COLOR)
-        text_rect = text_surf.get_rect(center=button_surface.get_rect().center)
-        button_surface.blit(text_surf, text_rect)
+        if self.icon:
+            icon_rect = self.icon.get_rect(center=button_surface.get_rect().center)
+            button_surface.blit(self.icon, icon_rect)
+        else:
+            text_surf = self.font.render(self.text, True, BUTTON_TEXT_COLOR)
+            text_rect = text_surf.get_rect(center=button_surface.get_rect().center)
+            button_surface.blit(text_surf, text_rect)
+
         surface.blit(button_surface, self.rect.topleft)
 
     def is_clicked(self, event):
@@ -62,7 +84,7 @@ class VolumeSlider:
         knob_centerx = self.rect.left + int(self.value * self.rect.width)
         self.knob_center = (knob_centerx, self.rect.centery)
 
-    def _set_value(self, new_volume_value):
+    def set_value(self, new_volume_value):
         self.value = max(0.0, min(1.0, new_volume_value))
         self._update_knob_position()
 
@@ -71,18 +93,18 @@ class VolumeSlider:
         if event.type == MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.dragging = True
-                self._set_value_from_pos(event.pos[0])
+                self.set_value_from_pos(event.pos[0])
                 changed = True
         elif event.type == MOUSEBUTTONUP and event.button == 1:
             self.dragging = False
         elif event.type == MOUSEMOTION and self.dragging:
-            self._set_value_from_pos(event.pos[0])
+            self.set_value_from_pos(event.pos[0])
             changed = True
         return changed
 
-    def _set_value_from_pos(self, x_pos):
+    def set_value_from_pos(self, x_pos):
         new_volume_value = (x_pos - self.rect.left) / self.rect.width
-        self._set_value(new_volume_value)
+        self.set_value(new_volume_value)
 
     def draw(self, surface):
         track_color = (40, 40, 40, 180)
@@ -114,22 +136,51 @@ class VolumeSlider:
         )
         surface.blit(slider_surface, self.rect.topleft)
 
+class HelpMenu:
+    def __init__(self, font):
+        self.font = font
+        self.buttons = []
+        self.visible = False
+        self.create_buttons()
+
+    def create_buttons(self):
+        self.buttons = build_buttons(['Back'], self.font, center_ratio=0.8)
+
+    def draw(self, surface):
+        background = pygame.transform.scale(settings.HELP_MENU_IMAGE, surface.get_size())  # Fit background to window.
+        surface.blit(background, (0, 0))  # Paint background.
+        for button in self.buttons:  # Draw menu buttons.
+            button.draw(surface)
+
+    def handle_event(self, event):
+        if event.type == KEYDOWN and event.key == K_ESCAPE:
+            return 'BACK'
+        for i, button in enumerate(self.buttons):
+            if button.is_clicked(event):
+                if i == 0:
+                    return 'BACK'
+        return None
 class MainMenu:
     def __init__(self, font):
         self.font = font
         self.buttons = []
-        self._create_buttons()
+        self.help_button = build_help_button(self.font)
+        self.create_buttons()
 
-    def _create_buttons(self):
+    def create_buttons(self):
         self.buttons = build_buttons(['Start Game', 'Options', 'Exit'], self.font)
+        self.help_button = build_help_button(self.font)
 
     def draw(self, surface):
         background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit background to window.
         surface.blit(background, (0, 0))  # Paint background.
         for button in self.buttons:  # Draw menu buttons.
             button.draw(surface)
+        self.help_button.draw(surface)
 
     def handle_event(self, event):
+        if self.help_button.is_clicked(event):
+            return 'HELP'
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
                 if i == 0:
@@ -151,7 +202,8 @@ class OptionsMenu:
         self.buttons = []
         self.music_slider = None
         self.sound_effects_slider = None
-        self.refresh_layout()
+        self.help_button = build_help_button(self.font)
+        self.create_buttons()
 
     def draw(self, surface):
         background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit menu art to window.
@@ -165,6 +217,8 @@ class OptionsMenu:
         self.sound_effects_panel[0].draw(surface)
         self.music_slider.draw(surface)
         self.music_panel[0].draw(surface)
+
+        self.help_button.draw(surface)
 
     def handle_event(self, event):
         # --- Handle music slider ---
@@ -186,9 +240,13 @@ class OptionsMenu:
             return None
 
         # Escape → back
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+        if event.type == KEYDOWN and event.key == K_ESCAPE:
             return "BACK"
 
+        # Help button
+        if self.help_button.is_clicked(event):
+            return 'HELP'
+        
         # Regular buttons
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
@@ -198,26 +256,28 @@ class OptionsMenu:
                     return "BACK"
         return None
 
-    def refresh_layout(self):
+    def create_buttons(self):
         self.buttons = build_buttons(['Fullscreen', 'Back'], self.font)
         # Push buttons down to give slider more breathing room.
         self.buttons_total_height = (len(self.buttons) * BUTTON_HEIGHT) + ((len(self.buttons) - 1) * BUTTON_SPACING)
         for button in self.buttons:
             button.rect.y += self.buttons_total_height // 2 + BUTTON_SPACING
+        
+        self.help_button = build_help_button(self.font)
 
         # --- create both sliders and panels ---
         screen_width, screen_height = pygame.display.get_surface().get_size()
 
         # SFX slider under it
         self.sound_effects_slider = VolumeSlider(screen_width // 2, screen_height // 2)
-        self.sound_effects_slider._set_value(self.sound_effects_volume)# Sync slider knob to current volume.
+        self.sound_effects_slider.set_value(self.sound_effects_volume)# Sync slider knob to current volume.
 
         self.sound_effects_panel = build_buttons([f"Sounds: {int(self.sound_effects_volume * 100)}%"], self.font)
         self.sound_effects_panel[0].rect.bottom = self.sound_effects_slider.rect.top - PANEL_SPACING
         
         # Music slider at upper-middle
         self.music_slider = VolumeSlider(screen_width // 2, (screen_height // 2) - 90)
-        self.music_slider._set_value(self.music_volume)# Sync slider knob to current volume.
+        self.music_slider.set_value(self.music_volume)# Sync slider knob to current volume.
 
         self.music_panel = build_buttons([f"Music: {int(self.music_volume * 100)}%"], self.font)
         self.music_panel[0].rect.bottom = self.music_slider.rect.top - PANEL_SPACING
@@ -259,31 +319,38 @@ class OptionsMenu:
         # Resize first so scale-dependent assets recompute, then convert surfaces safely.
         settings.resize(*screen.get_size())  # Recompute sizes based on new window.
         settings._convert_surfaces_for_display(screen)
-        main_menu._create_buttons()  # Recenter main menu buttons.
-        self.refresh_layout()  # Recenter options buttons/slider.
-        pause_menu._create_buttons()  # Recenter pause menu buttons.
-        game_over_menu.refresh_layout()  # Recenter game over menu buttons.
+        main_menu.create_buttons()  # Recenter main menu buttons.
+        self.create_buttons()  # Recenter options buttons/slider.
+        pause_menu.create_buttons()  # Recenter pause menu buttons.
+        game_over_menu.create_buttons()  # Recenter game over menu buttons.
         return screen, windowed_size
 
 class PauseMenu:
     def __init__(self, font):
         self.font = font
         self.buttons = []
-        self._create_buttons()
+        self.help_button = build_help_button(self.font)
+        self.create_buttons()
 
-    def _create_buttons(self):
+    def create_buttons(self):
         self.buttons = build_buttons(['Resume', 'Main Menu', 'Exit Game'], self.font, center_ratio=0.6)
+        self.help_button = build_help_button(self.font)
 
     def draw(self, surface):
-        background = pygame.transform.scale(settings.PAUSED_IMAGE, surface.get_size())
+        background = pygame.transform.scale(settings.PAUSED_MENU_IMAGE, surface.get_size())
         surface.blit(background, (0, 0))
 
         for b in self.buttons:
             b.draw(surface)
 
+        self.help_button.draw(surface)
+
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
             return "RESUME"
+        
+        if self.help_button.is_clicked(event):
+            return 'HELP'
 
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
@@ -300,10 +367,12 @@ class GameOverMenu:
     def __init__(self, font):
         self.font = font
         self.buttons = []
-        self._create_buttons()
+        self.create_buttons()
+        self.help_button = build_help_button(self.font)
 
-    def _create_buttons(self):
+    def create_buttons(self):
         self.buttons = build_buttons(['Retry', 'Main Menu', 'Exit'], self.font, center_ratio=0.6)
+        self.help_button = build_help_button(self.font)
 
     def draw(self, surface, score, kill_counter):
         background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())
@@ -324,9 +393,14 @@ class GameOverMenu:
         for b in self.buttons:
             b.draw(surface)
 
+        self.help_button.draw(surface)
+
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
             return "MAIN_MENU"
+        
+        if self.help_button.is_clicked(event):
+            return 'HELP'
 
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
@@ -338,11 +412,7 @@ class GameOverMenu:
                     return "EXIT"
         return None
 
-    def refresh_layout(self):
-        self._create_buttons()
-
-
-def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock):
+def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock):
     """Main menu loop; exits when the user starts the game or quits."""
     pygame.mixer.music.stop()
     current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
@@ -356,29 +426,40 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
                 if result == 'START_GAME':
                     return "START", screen, windowed_size
                 elif result == 'OPTIONS':
-                    current_menu = "OPTIONS"
+                    current_menu = 'OPTIONS'
+                elif result == 'HELP':
+                    current_menu = 'HELP'
                 elif result == 'EXIT':
                     terminate()
 
-            elif current_menu == "OPTIONS":
+            elif current_menu == 'OPTIONS':
                 result = options_menu.handle_event(event)
-                if result == "TOGGLE_FULLSCREEN":
+                if result == 'HELP':
+                    current_menu = 'HELP'
+                elif result == 'TOGGLE_FULLSCREEN':
                     screen, windowed_size = options_menu.toggle_fullscreen(
                         screen, windowed_size, main_menu, pause_menu, game_over_menu
                     )
-                elif result == "BACK":
+                elif result == 'BACK':
                     current_menu = "MAIN"
+            
+            elif current_menu == 'HELP':
+                result = help_menu.handle_event(event)
+                if result == 'BACK':
+                    current_menu = 'MAIN'
 
         if current_menu == "MAIN":
             main_menu.draw(screen)
-        else:
+        elif current_menu == 'HELP':
+            help_menu.draw(screen)
+        elif current_menu == 'OPTIONS':
             options_menu.draw(screen)
 
         pygame.display.update()
         clock.tick(settings.FPS)
 
 
-def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, clock):
+def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock):
     """
     Wrapper around run_main_menu for compatibility; returns (choice, screen, windowed_size).
     """
@@ -390,5 +471,6 @@ def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pau
         options_menu,
         pause_menu,
         game_over_menu,
+        help_menu,
         clock
     )

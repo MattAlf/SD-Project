@@ -14,19 +14,24 @@ class Settings:
             pygame.init()  # Ensure pygame is ready before loading assets.
 
         self.FPS = 60  # Target frames per second.
-        self.TEXT_COLOR = (0, 0, 0)  # Default UI text color.
-        self.BACKGROUND_COLOR = (255, 255, 255)  # Default background fill.
         self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR = 0.7  # Parallax base speed.
 
         assets_dir = Path(__file__).parent  # Folder containing assets.
         # Load raw; we'll convert after a display mode is set.
-        self.PLAYER_IMAGE = pygame.image.load(assets_dir / "player.png")
+        # Menu related images
+        self.MAIN_MENU_IMAGE = pygame.image.load(assets_dir / "main_menu.png")
+        self.PAUSED_MENU_IMAGE = pygame.image.load(assets_dir / "pause_menu.png")
+        self.HELP_MENU_IMAGE = pygame.image.load(assets_dir / "help_menu.png")
+        self.HELP_ICON = pygame.image.load(assets_dir / "help_icon.png")
+        self.HELP_ICON = pygame.transform.smoothscale(self.HELP_ICON, (24, 24))
+
+
+
+        # Game related images
         self.SPEAR_IMAGE = pygame.image.load(assets_dir / "spear.png")
         self.BADDIE_IMAGE = pygame.image.load(assets_dir / "baddie.png")
         self.PLATFORM_IMAGE = pygame.image.load(assets_dir / "platform.png")
         self.GROUND_IMAGE = pygame.image.load(assets_dir / "background_layers/ground.png")
-        self.MAIN_MENU_IMAGE = pygame.image.load(assets_dir / "Main.png")
-        self.PAUSED_IMAGE = pygame.image.load(assets_dir / "Pause.png")
         self.GRASS_IMAGE = pygame.image.load(assets_dir / "background_layers/grass.png")
         self.RED_HEART_IMAGE = pygame.image.load(assets_dir / "red_heart.png")
         self.BLUE_HEART_IMAGE = pygame.image.load(assets_dir / "blue_heart.png")
@@ -290,13 +295,14 @@ class Settings:
         if pygame.display.get_surface() is None:
             return
         try:
-            self.PLAYER_IMAGE = self.PLAYER_IMAGE.convert_alpha()
             self.SPEAR_IMAGE = self.SPEAR_IMAGE.convert_alpha()
             self.BADDIE_IMAGE = self.BADDIE_IMAGE.convert_alpha()
             self.PLATFORM_IMAGE = self.PLATFORM_IMAGE.convert_alpha()
             self.GROUND_IMAGE = self.GROUND_IMAGE.convert_alpha()
             self.MAIN_MENU_IMAGE = self.MAIN_MENU_IMAGE.convert()
-            self.PAUSED_IMAGE = self.PAUSED_IMAGE.convert()
+            self.PAUSED_MENU_IMAGE = self.PAUSED_MENU_IMAGE.convert()
+            self.HELP_MENU_IMAGE = self.HELP_MENU_IMAGE.convert()
+            self.HELP_ICON = self.HELP_ICON.convert_alpha()
             self.GRASS_IMAGE = self.GRASS_IMAGE.convert_alpha()
             self.BACKGROUND_LAYERS = [img.convert_alpha() for img in self.BACKGROUND_LAYERS]
             self.RED_HEART_IMAGE = self.RED_HEART_IMAGE.convert_alpha()

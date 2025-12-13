@@ -34,12 +34,12 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
     paused = False
     music_muted_for_pause = False
     pause_music_volume = pygame.mixer.music.get_volume()
-    pause_menu._create_buttons()
+    pause_menu.create_buttons()
 
     def pause_game():
         nonlocal paused, music_muted_for_pause, pause_music_volume
         paused = True
-        pause_menu._create_buttons()
+        pause_menu.create_buttons()
         pause_music_volume = pygame.mixer.music.get_volume()
         pygame.mixer.music.pause()
         pygame.mixer.music.set_volume(0.0)
@@ -184,7 +184,7 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
     # Show the game over screen with retry/main menu options.
     pygame.mixer.music.stop()
     game_over_sound.play()
-    game_over_menu.refresh_layout()
+    game_over_menu.create_buttons()
 
     while True:
         for event in pygame.event.get():
