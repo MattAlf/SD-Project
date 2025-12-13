@@ -110,7 +110,8 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
         platform_add_counter += 1
         if platform_add_counter >= settings.ADD_NEW_PLATFORM_RATE:
             platform_add_counter = 0
-            platform_group.add(Platform())
+            for i in range (random.randint(1,2)):
+                platform_group.add(Platform())
 
         now_ticks = pygame.time.get_ticks()
 
