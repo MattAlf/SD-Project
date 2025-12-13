@@ -19,26 +19,26 @@ class Settings:
         assets_dir = Path(__file__).parent  # Folder containing assets.
         # Load raw; we'll convert after a display mode is set.
         # Menu related images
-        self.MAIN_MENU_IMAGE = pygame.image.load(assets_dir / "main_menu.png")
-        self.PAUSED_MENU_IMAGE = pygame.image.load(assets_dir / "pause_menu.png")
-        self.HELP_MENU_IMAGE = pygame.image.load(assets_dir / "help_menu.png")
-        self.HELP_ICON = pygame.image.load(assets_dir / "help_icon.png")
+        self.MAIN_MENU_IMAGE = pygame.image.load(assets_dir / "assets/main_menu.png")
+        self.PAUSED_MENU_IMAGE = pygame.image.load(assets_dir / "assets/pause_menu.png")
+        self.HELP_MENU_IMAGE = pygame.image.load(assets_dir / "assets/help_menu.png")
+        self.HELP_ICON = pygame.image.load(assets_dir / "assets/help_icon.png")
         self.HELP_ICON = pygame.transform.smoothscale(self.HELP_ICON, (24, 24))
 
 
 
         # Game related images
-        self.SPEAR_IMAGE = pygame.image.load(assets_dir / "spear.png")
-        self.BADDIE_IMAGE = pygame.image.load(assets_dir / "baddie.png")
-        self.PLATFORM_IMAGE = pygame.image.load(assets_dir / "platform.png")
+        self.SPEAR_IMAGE = pygame.image.load(assets_dir / "assets/spear.png")
+        self.BADDIE_IMAGE = pygame.image.load(assets_dir / "assets/baddie.png")
+        self.PLATFORM_IMAGE = pygame.image.load(assets_dir / "assets/platform.png")
         self.GROUND_IMAGE = pygame.image.load(assets_dir / "background_layers/ground.png")
         self.GRASS_IMAGE = pygame.image.load(assets_dir / "background_layers/grass.png")
-        self.RED_HEART_IMAGE = pygame.image.load(assets_dir / "red_heart.png")
-        self.BLUE_HEART_IMAGE = pygame.image.load(assets_dir / "blue_heart.png")
-        self.SHIELD_EFFECT_IMAGE = pygame.image.load(assets_dir / "shield_effect.png")
-        self.SHIELD_PICKUP_IMAGE = pygame.image.load(assets_dir / "shield_pickup.png")
-        self.DRAGON_IMAGE = pygame.image.load(assets_dir / "dragon.png")
-        self.FIREBALL_IMAGE = pygame.image.load(assets_dir / "fire_arrow.png")
+        self.RED_HEART_IMAGE = pygame.image.load(assets_dir / "assets/red_heart.png")
+        self.BLUE_HEART_IMAGE = pygame.image.load(assets_dir / "assets/blue_heart.png")
+        self.SHIELD_EFFECT_IMAGE = pygame.image.load(assets_dir / "assets/shield_effect.png")
+        self.SHIELD_PICKUP_IMAGE = pygame.image.load(assets_dir / "assets/shield_pickup.png")
+        self.DRAGON_IMAGE = pygame.image.load(assets_dir / "assets/dragon.png")
+        self.FIREBALL_IMAGE = pygame.image.load(assets_dir / "assets/fire_arrow.png")
         self.BACKGROUND_LAYERS = [
             pygame.image.load(assets_dir / "background_layers/1_sky.png"),
             pygame.image.load(assets_dir / "background_layers/2_clouds.png"),
