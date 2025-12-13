@@ -22,6 +22,7 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
     dragon_group = pygame.sprite.Group()
     fireball_group = pygame.sprite.Group()
     score = 0
+    high_score = 0
     kill_counter = 0
     Bullet.kill_count = 0
     baddie_add_counter = 0
@@ -154,8 +155,8 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
 
         # Draw everything.
         background_group.draw(screen)
-        settings.draw_score(screen, font, score)
-        settings.draw_kill_counter(screen, font, kill_counter)
+        settings.draw_hud(screen, font, score, high_score, kill_counter, x=10, y=10)
+
         shield_pickup_group.draw(screen)
         screen.blit(player.image, player.full_image_rect)
         shield_effect_group.draw(screen)
