@@ -80,7 +80,7 @@ class Player(pygame.sprite.Sprite):
         if self.run_left and self.run_right:
             self.run_left = self.run_right = False
 
-    def update(self, events, ground_group, platform_group, spear_group, baddie_group, shield_pickup_group, shield_effect_group):
+    def update(self, events, ground_group, platform_group, spear_group, ghost_group, shield_pickup_group, shield_effect_group):
         self.current_time = pygame.time.get_ticks()
         self.handle_input(events, ground_group, platform_group, spear_group)
         self.acceleration = pygame.math.Vector2(0, self.VERTICAL_ACCELERATION)
@@ -132,7 +132,7 @@ class Player(pygame.sprite.Sprite):
             self.image.set_alpha(255)
 
         self.check_for_pickable_objects_collision(shield_pickup_group, shield_effect_group)
-        self.check_for_enemy_collision(baddie_group)
+        self.check_for_enemy_collision(ghost_group)
 
     def check_platform_collisions(self, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
@@ -205,8 +205,8 @@ class Player(pygame.sprite.Sprite):
             self.shield_timer = self.current_time + settings.SHIELD_DURATION_TIME
             shield_effect_group.add(ShieldEffect(self, settings.SHIELD_EFFECT_IMAGE))
 
-    def check_for_enemy_collision(self, baddie_group):
-        touched_enemy = pygame.sprite.spritecollide(self, baddie_group, True)
+    def check_for_enemy_collision(self, ghost_group):
+        touched_enemy = pygame.sprite.spritecollide(self, ghost_group, True)
         if touched_enemy:
             self.take_damage()
 
@@ -243,11 +243,11 @@ class Bullet(pygame.sprite.Sprite):
         self.speed = settings.SPEAR_SPEED
         self.direction = direction
 
-    def update(self, baddie_group):
+    def update(self, ghost_group):
         self.rect.x += self.speed * self.direction
         if self.rect.right < 0 or self.rect.left > settings.WINDOW_WIDTH:
             self.kill()
-        if pygame.sprite.spritecollide(self, baddie_group, True):
+        if pygame.sprite.spritecollide(self, ghost_group, True):
             self.kill()
             Bullet.kill_count += 1             
 
@@ -364,14 +364,14 @@ class Fireball(pygame.sprite.Sprite):
             self.rect.bottom < 0 or self.rect.top > settings.WINDOW_HEIGHT):
             self.kill()
 
-class Baddies(Entity):
+class Ghosts(Entity):
     def __init__(self):
-        image = settings.BADDIE_IMAGE
-        self.size = random.randint(settings.BADDIE_MIN_SIZE, settings.BADDIE_MAX_SIZE)
+        image = settings.GHOST_IMAGE
+        self.size = random.randint(settings.GHOST_MIN_SIZE, settings.GHOST_MAX_SIZE)
         super().__init__(image, self.size* 2, self.size)
         self.rect.left = settings.WINDOW_WIDTH
         self.rect.bottom = random.randint(0, settings.WINDOW_HEIGHT - self.size)
-        self.speed = random.randint(settings.BADDIE_MIN_SPEED, settings.BADDIE_MAX_SPEED)
+        self.speed = random.randint(settings.GHOST_MIN_SPEED, settings.GHOST_MAX_SPEED)
 
     def update(self):
         self.rect.x -= self.speed

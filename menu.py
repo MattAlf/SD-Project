@@ -478,8 +478,3 @@ def toggle_fullscreen(screen):
                 pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF
             )
         settings.is_fullscreen = True
-
-    # Resize first so scale-dependent assets recompute, then convert surfaces safely.
- #   settings.resize(*screen.get_size())  # Recompute sizes based on new window.
- #   settings._convert_surfaces_for_display(screen)
-

@@ -6,19 +6,13 @@ from menu import MainMenu, OptionsMenu, PauseMenu, GameOverMenu, HelpMenu
 from state_manager import run_app
 
 
-
 pygame.init()
-
-settings.resize(settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT)  # Apply windowed size to all scalable settings
 
 # Create the window and remember windowed size for toggling fullscreen
 screen = settings.create_window()
 
 clock = pygame.time.Clock()  # Regulates FPS across menus and gameplay.
 font = pygame.font.SysFont(None, 48)  # Shared font for UI text.
-
-# Build static layers sized to the current screen.
-settings.initialize_static_layers(screen)
 
 main_menu = MainMenu(font)  # Main menu UI.
 options_menu = OptionsMenu(font)  # Options UI (fullscreen + volume).

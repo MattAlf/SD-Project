@@ -3,18 +3,18 @@
 import random
 import pygame
 from pygame.locals import *
-from entity import Entity, Player, Bullet, ShieldPickup, ShieldEffect, Dragon, Fireball, Baddies, Platform, Ground, Background
+from entity import Entity, Player, Bullet, ShieldPickup, ShieldEffect, Dragon, Fireball, Ghosts, Platform, Ground, Background
 from settings import settings, terminate
 
 
 def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
     """Run a single game round; returns a next action when the player pauses or dies."""
-    background_group, ground_group = settings.build_static_layers()  # Static scenery.
+    background_group, ground_group = settings.initialize_static_layers(screen)  # Static scenery.
 
     # Core game state setup.
     player = Player()
     player_group = pygame.sprite.GroupSingle(player)
-    baddie_group = pygame.sprite.Group()
+    ghost_group = pygame.sprite.Group()
     platform_group = pygame.sprite.Group()
     spear_group = pygame.sprite.Group()
     shield_pickup_group = pygame.sprite.Group()
@@ -24,7 +24,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
     score = 0
     kill_counter = 0
     Bullet.kill_count = 0
-    baddie_add_counter = 0
+    ghost_add_counter = 0
     platform_add_counter = 0
     dragon_alive = False
     next_shield_spawn = pygame.time.get_ticks() + random.randint(
@@ -100,11 +100,11 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
             dragon_group.add(Dragon(player))
             dragon_alive = True
 
-        # Add new baddies (only if dragon hasn't spawned).
-        baddie_add_counter += 1
-        if baddie_add_counter >= settings.ADD_NEW_BADDIE_RATE and not dragon_alive:
-            baddie_add_counter = 0
-            baddie_group.add(Baddies())
+        # Add new ghosts (only if dragon hasn't spawned).
+        ghost_add_counter += 1
+        if ghost_add_counter >= settings.ADD_NEW_GHOST_RATE and not dragon_alive:
+            ghost_add_counter = 0
+            ghost_group.add(Ghosts())
 
         # Add new platform at a fixed cadence.
         platform_add_counter += 1
@@ -124,9 +124,9 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
 
         # Update game objects.
         platform_group.update()
-        player_group.update(events, ground_group, platform_group, spear_group, baddie_group, shield_pickup_group, shield_effect_group)
-        baddie_group.update()
-        spear_group.update(baddie_group)
+        player_group.update(events, ground_group, platform_group, spear_group, ghost_group, shield_pickup_group, shield_effect_group)
+        ghost_group.update()
+        spear_group.update(ghost_group)
         dragon_group.update(fireball_group, spear_group, score)
         fireball_group.update()
         background_group.update()
@@ -148,7 +148,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
             else:
                 player.position.x += 20
         
-        # Check if dragon is dead and respawn baddies
+        # Check if dragon is dead and respawn ghosts
         if dragon_alive and len(dragon_group) == 0:
             dragon_alive = False
 
@@ -159,7 +159,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
         shield_pickup_group.draw(screen)
         screen.blit(player.image, player.full_image_rect)
         shield_effect_group.draw(screen)
-        baddie_group.draw(screen)
+        ghost_group.draw(screen)
         platform_group.draw(screen)
         spear_group.draw(screen)
         dragon_group.draw(screen)
