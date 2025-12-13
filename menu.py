@@ -8,8 +8,11 @@ BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING, PANEL_SPACING = 260, 45, 20, 10
 BUTTON_BASE = (20, 20, 20, 180)
 BUTTON_BORDER = (255, 255, 255, 180)
 BUTTON_TEXT_COLOR = (255, 255, 255, 255)
-HELP_BUTTON_SIZE = 40
+HELP_BUTTON_SIZE = 70
 HELP_BUTTON_MARGIN = 12
+FULLSCREEN_BUTTON_SIZE = 70
+FULLSCREEN_BUTTON_MARGIN = 12
+
 
 def build_help_button(font):
     screen_width, _ = pygame.display.get_surface().get_size()
@@ -26,6 +29,21 @@ def build_help_button(font):
         icon = settings.HELP_ICON
     )
 
+def build_fullscreen_button(font):
+    screen_width, _ = pygame.display.get_surface().get_size()
+    rect = pygame.Rect(
+        FULLSCREEN_BUTTON_MARGIN,
+        FULLSCREEN_BUTTON_MARGIN,
+        FULLSCREEN_BUTTON_SIZE,
+        FULLSCREEN_BUTTON_SIZE
+    )
+    return Button(
+        text = "",
+        rect = rect,
+        font = font,
+        icon = settings.FULLSCREEN_ICON
+    )
+
 def build_buttons(labels, font, center_ratio=0.5):
     """Return Buttons centered in the current window."""
     screen_width, screen_height = pygame.display.get_surface().get_size()
@@ -36,9 +54,9 @@ def build_buttons(labels, font, center_ratio=0.5):
     for i, text in enumerate(labels):
         button_list.append(
             Button(
-                text,
-                (x_left, y_start + (i * (BUTTON_HEIGHT + BUTTON_SPACING)), BUTTON_WIDTH, BUTTON_HEIGHT),
-                font
+                text = text,
+                rect = (x_left, y_start + (i * (BUTTON_HEIGHT + BUTTON_SPACING)), BUTTON_WIDTH, BUTTON_HEIGHT),
+                font = font
                 )
             )
     return button_list
@@ -139,19 +157,22 @@ class HelpMenu:
     def __init__(self, font):
         self.font = font
         self.buttons = []
-        self.visible = False
         self.create_buttons()
 
     def create_buttons(self):
-        self.buttons = build_buttons(['Back'], self.font, center_ratio=0.8)
+        self.buttons = build_buttons(['Back'], self.font, center_ratio=0.85)
+        self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface):
         background = pygame.transform.scale(settings.HELP_MENU_IMAGE, surface.get_size())  # Fit background to window.
         surface.blit(background, (0, 0))  # Paint background.
         for button in self.buttons:  # Draw menu buttons.
             button.draw(surface)
+        self.fullscreen_button.draw(surface)
 
     def handle_event(self, event):
+        if self.fullscreen_button.is_clicked(event):
+            return 'TOGGLE_FULLSCREEN'
         if event.type == KEYDOWN and event.key == K_ESCAPE:
             return 'BACK'
         for i, button in enumerate(self.buttons):
@@ -162,13 +183,13 @@ class HelpMenu:
 class MainMenu:
     def __init__(self, font):
         self.font = font
-        self.buttons = []
-        self.help_button = build_help_button(self.font)
+
         self.create_buttons()
 
     def create_buttons(self):
         self.buttons = build_buttons(['Start Game', 'Options', 'Exit'], self.font, center_ratio=0.6)
         self.help_button = build_help_button(self.font)
+        self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface):
         background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit background to window.
@@ -176,10 +197,13 @@ class MainMenu:
         for button in self.buttons:  # Draw menu buttons.
             button.draw(surface)
         self.help_button.draw(surface)
+        self.fullscreen_button.draw(surface)
 
     def handle_event(self, event):
         if self.help_button.is_clicked(event):
             return 'HELP'
+        if self.fullscreen_button.is_clicked(event):
+            return 'TOGGLE_FULLSCREEN'
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
                 if i == 0:
@@ -193,15 +217,9 @@ class MainMenu:
 class OptionsMenu:
     def __init__(self, font):
         self.font = font
-        self.music_volume = pygame.mixer.music.get_volume()
+        self.music_volume = settings.music_volume
         self.sound_effects_volume = settings.sound_effects_volume
 
-        self.fullscreen = False
-
-        self.buttons = []
-        self.music_slider = None
-        self.sound_effects_slider = None
-        self.help_button = build_help_button(self.font)
         self.create_buttons()
 
     def draw(self, surface):
@@ -218,6 +236,7 @@ class OptionsMenu:
         self.music_panel[0].draw(surface)
 
         self.help_button.draw(surface)
+        self.fullscreen_button.draw(surface)
 
     def handle_event(self, event):
         # --- Handle music slider ---
@@ -246,23 +265,25 @@ class OptionsMenu:
         if self.help_button.is_clicked(event):
             return 'HELP'
         
+        if self.fullscreen_button.is_clicked(event):
+            return 'TOGGLE_FULLSCREEN'
+        
         # Regular buttons
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
                 if i == 0:
-                    return "TOGGLE_FULLSCREEN"
-                elif i == 1:
                     return "BACK"
         return None
 
     def create_buttons(self):
-        self.buttons = build_buttons(['Fullscreen', 'Back'], self.font)
+        self.buttons = build_buttons(['Back'], self.font)
         # Push buttons down to give slider more breathing room.
         self.buttons_total_height = (len(self.buttons) * BUTTON_HEIGHT) + ((len(self.buttons) - 1) * BUTTON_SPACING)
         for button in self.buttons:
             button.rect.y += self.buttons_total_height // 2 + BUTTON_SPACING
         
         self.help_button = build_help_button(self.font)
+        self.fullscreen_button = build_fullscreen_button(self.font)
 
         # --- create both sliders and panels ---
         screen_width, screen_height = pygame.display.get_surface().get_size()
@@ -281,59 +302,16 @@ class OptionsMenu:
         self.music_panel = build_buttons([f"Music: {int(self.music_volume * 100)}%"], self.font)
         self.music_panel[0].rect.bottom = self.music_slider.rect.top - PANEL_SPACING
 
-    def toggle_fullscreen(self, screen, windowed_size, main_menu, pause_menu, game_over_menu):
-        """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
-        if self.fullscreen:
-            # Switch to windowed
-            try:
-                screen = pygame.display.set_mode(
-                    windowed_size,
-                    pygame.SCALED | pygame.DOUBLEBUF,
-                    vsync=1
-                )
-            except pygame.error:
-                # Fallback: minimal window
-                screen = pygame.display.set_mode(
-                    windowed_size,
-                    pygame.SCALED | pygame.DOUBLEBUF
-                )
-            self.fullscreen = False
-        else:
-            # Switch to fullscreen
-            windowed_size = screen.get_size()
-            try:
-                screen = pygame.display.set_mode(
-                    windowed_size,
-                    pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF,
-                    vsync=1
-                )
-            except pygame.error:
-                # Fallback: plain fullscreen
-                screen = pygame.display.set_mode(
-                    windowed_size,
-                    pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF
-                )
-            self.fullscreen = True
-
-        # Resize first so scale-dependent assets recompute, then convert surfaces safely.
-        settings.resize(*screen.get_size())  # Recompute sizes based on new window.
-        settings._convert_surfaces_for_display(screen)
-        main_menu.create_buttons()  # Recenter main menu buttons.
-        self.create_buttons()  # Recenter options buttons/slider.
-        pause_menu.create_buttons()  # Recenter pause menu buttons.
-        game_over_menu.create_buttons()  # Recenter game over menu buttons.
-        return screen, windowed_size
-
 class PauseMenu:
     def __init__(self, font):
         self.font = font
-        self.buttons = []
-        self.help_button = build_help_button(self.font)
+
         self.create_buttons()
 
     def create_buttons(self):
         self.buttons = build_buttons(['Resume', 'Main Menu', 'Exit Game'], self.font, center_ratio=0.6)
         self.help_button = build_help_button(self.font)
+        self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface):
         background = pygame.transform.scale(settings.PAUSED_MENU_IMAGE, surface.get_size())
@@ -343,6 +321,7 @@ class PauseMenu:
             b.draw(surface)
 
         self.help_button.draw(surface)
+        self.fullscreen_button.draw(surface)
 
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
@@ -350,6 +329,9 @@ class PauseMenu:
         
         if self.help_button.is_clicked(event):
             return 'HELP'
+        
+        if self.fullscreen_button.is_clicked(event):
+            return 'TOGGLE_FULLSCREEN'
 
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
@@ -365,13 +347,13 @@ class PauseMenu:
 class GameOverMenu:
     def __init__(self, font):
         self.font = font
-        self.buttons = []
+
         self.create_buttons()
-        self.help_button = build_help_button(self.font)
 
     def create_buttons(self):
         self.buttons = build_buttons(['Retry', 'Main Menu', 'Exit'], self.font, center_ratio=0.6)
         self.help_button = build_help_button(self.font)
+        self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface, score, kill_counter):
         background = pygame.transform.scale(settings.GAME_OVER_MENU_IMAGE, surface.get_size())
@@ -393,6 +375,7 @@ class GameOverMenu:
             b.draw(surface)
 
         self.help_button.draw(surface)
+        self.fullscreen_button.draw(surface)
 
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
@@ -400,6 +383,9 @@ class GameOverMenu:
         
         if self.help_button.is_clicked(event):
             return 'HELP'
+        
+        if self.fullscreen_button.is_clicked(event):
+            return 'TOGGLE_FULLSCREEN'
 
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
@@ -411,7 +397,7 @@ class GameOverMenu:
                     return "EXIT"
         return None
 
-def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock):
+def run_main_menu(screen, main_menu, options_menu, help_menu, clock):
     """Main menu loop; exits when the user starts the game or quits."""
     pygame.mixer.music.stop()
     current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
@@ -423,11 +409,13 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
             if current_menu == "MAIN":
                 result = main_menu.handle_event(event)
                 if result == 'START_GAME':
-                    return "START", screen, windowed_size
+                    return screen
                 elif result == 'OPTIONS':
                     current_menu = 'OPTIONS'
                 elif result == 'HELP':
                     current_menu = 'HELP'
+                elif result == 'TOGGLE_FULLSCREEN':
+                    toggle_fullscreen(screen)
                 elif result == 'EXIT':
                     terminate()
 
@@ -436,9 +424,7 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
                 if result == 'HELP':
                     current_menu = 'HELP'
                 elif result == 'TOGGLE_FULLSCREEN':
-                    screen, windowed_size = options_menu.toggle_fullscreen(
-                        screen, windowed_size, main_menu, pause_menu, game_over_menu
-                    )
+                    toggle_fullscreen(screen)
                 elif result == 'BACK':
                     current_menu = "MAIN"
             
@@ -446,6 +432,8 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
                 result = help_menu.handle_event(event)
                 if result == 'BACK':
                     current_menu = 'MAIN'
+                elif result == 'TOGGLE_FULLSCREEN':
+                    toggle_fullscreen(screen)
 
         if current_menu == "MAIN":
             main_menu.draw(screen)
@@ -458,18 +446,54 @@ def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, paus
         clock.tick(settings.FPS)
 
 
-def show_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock):
+def show_main_menu(screen, main_menu, options_menu, help_menu, clock):
     """
     Wrapper around run_main_menu for compatibility; returns (choice, screen, windowed_size).
     """
     return run_main_menu(
         screen,
-        windowed_size,
-        settings,
         main_menu,
         options_menu,
-        pause_menu,
-        game_over_menu,
         help_menu,
         clock
     )
+
+def toggle_fullscreen(screen):
+    """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
+
+    if settings.is_fullscreen:
+        # Switch to windowed
+        try:
+            screen = pygame.display.set_mode(
+                settings.WINDOW_DIMENSIONS,
+                pygame.SCALED | pygame.DOUBLEBUF,
+                vsync=1
+            )
+        except pygame.error:
+            # Fallback: minimal window
+            screen = pygame.display.set_mode(
+                settings.WINDOW_DIMENSIONS,
+                pygame.SCALED | pygame.DOUBLEBUF
+            )
+        settings.is_fullscreen = False
+    else:
+        # Switch to fullscreen
+        try:
+            screen = pygame.display.set_mode(
+                settings.WINDOW_DIMENSIONS,
+                pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF,
+                vsync=1
+            )
+        except pygame.error:
+            # Fallback: plain fullscreen
+            screen = pygame.display.set_mode(
+                settings.WINDOW_DIMENSIONS,
+                pygame.FULLSCREEN | pygame.SCALED | pygame.DOUBLEBUF
+            )
+        settings.is_fullscreen = True
+
+    # Resize first so scale-dependent assets recompute, then convert surfaces safely.
+ #   settings.resize(*screen.get_size())  # Recompute sizes based on new window.
+ #   settings._convert_surfaces_for_display(screen)
+    return
+

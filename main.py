@@ -13,7 +13,7 @@ info = pygame.display.Info()  # Grab current display info
 settings.resize(settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT)  # Apply windowed size to all scalable settings
 
 # Create the window and remember windowed size for toggling fullscreen
-screen, windowed_size = settings.create_window()
+screen = settings.create_window()
 
 clock = pygame.time.Clock()  # Regulates FPS across menus and gameplay.
 font = pygame.font.SysFont(None, 48)  # Shared font for UI text.
@@ -28,4 +28,4 @@ game_over_menu = GameOverMenu(font)  # Game over UI.
 help_menu = HelpMenu(font)
 
 # Delegate outer loop to state manager
-run_app(settings, screen, windowed_size, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock, font)
+run_app(screen, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock, font)

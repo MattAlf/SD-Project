@@ -12,6 +12,8 @@ class Settings:
 
     DEFAULT_WINDOW_WIDTH = 1280  # Default windowed width.
     DEFAULT_WINDOW_HEIGHT = 720  # Default windowed height.
+    WINDOW_DIMENSIONS = (DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
+    is_fullscreen = False
 
     def __init__(self):
         if not pygame.get_init():
@@ -23,13 +25,15 @@ class Settings:
         assets_dir = Path(__file__).parent  # Folder containing assets.
         # Load raw; we'll convert after a display mode is set.
         # Menu related images
-        self.MAIN_MENU_IMAGE = pygame.image.load(assets_dir / "main_menu.png")
-        self.PAUSED_MENU_IMAGE = pygame.image.load(assets_dir / "paused_menu.png")
-        self.HELP_MENU_IMAGE = pygame.image.load(assets_dir / "help_menu.png")
-        self.GAME_OVER_MENU_IMAGE = pygame.image.load(assets_dir / "game_over_menu.png")
-        self.OPTIONS_MENU_IMAGE = pygame.image.load(assets_dir / "options_menu.png")
-        self.HELP_ICON = pygame.image.load(assets_dir / "help_icon.png")
-        self.HELP_ICON = pygame.transform.smoothscale(self.HELP_ICON, (24, 24))
+        self.MAIN_MENU_IMAGE = pygame.image.load(assets_dir / "menu_images/main_menu.png")
+        self.PAUSED_MENU_IMAGE = pygame.image.load(assets_dir / "menu_images/paused_menu.png")
+        self.HELP_MENU_IMAGE = pygame.image.load(assets_dir / "menu_images/help_menu.png")
+        self.GAME_OVER_MENU_IMAGE = pygame.image.load(assets_dir / "menu_images/game_over_menu.png")
+        self.OPTIONS_MENU_IMAGE = pygame.image.load(assets_dir / "menu_images/options_menu.png")
+        self.HELP_ICON = pygame.image.load(assets_dir / "menu_images/help_icon.png")
+        self.HELP_ICON = pygame.transform.smoothscale(self.HELP_ICON, (50, 50))
+        self.FULLSCREEN_ICON = pygame.image.load(assets_dir / "menu_images/fullscreen_icon.png")
+        self.FULLSCREEN_ICON = pygame.transform.smoothscale(self.FULLSCREEN_ICON, (50, 50))
 
 
 
@@ -249,19 +253,18 @@ class Settings:
         os.environ["SDL_VIDEO_CENTERED"] = "1"
         try:
             screen = pygame.display.set_mode(
-                (self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
+                self.WINDOW_DIMENSIONS,
                 pygame.SCALED | pygame.DOUBLEBUF,
                 vsync=1
             )
         except TypeError:
             # Older pygame versions may not support vsync kwarg; fall back quietly.
             screen = pygame.display.set_mode(
-                (self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
+                self.WINDOW_DIMENSIONS,
                 pygame.SCALED | pygame.DOUBLEBUF
             )
         self._convert_surfaces_for_display(screen)
-        windowed_size = (self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
-        return screen, windowed_size
+        return screen
 
     def draw_score(self, surface, font, score, x=10, y=0, color=(0, 0, 122)):
         """Render the score text to the given surface."""

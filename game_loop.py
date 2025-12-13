@@ -4,10 +4,10 @@ import random
 import pygame
 from pygame.locals import *
 from entity import *
-from settings import terminate
+from settings import settings, terminate
 
 
-def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over_sound):
+def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
     """Run a single game round; returns a next action when the player pauses or dies."""
     background_group, ground_group = settings.build_static_layers()  # Static scenery.
 
