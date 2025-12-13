@@ -1,5 +1,4 @@
 # menu.py - UI components for main/options/pause menus.
-import sys
 import pygame
 from pygame.locals import *
 from settings import settings, terminate
@@ -409,7 +408,7 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, clock):
             if current_menu == "MAIN":
                 result = main_menu.handle_event(event)
                 if result == 'START_GAME':
-                    return screen
+                    return
                 elif result == 'OPTIONS':
                     current_menu = 'OPTIONS'
                 elif result == 'HELP':
@@ -445,18 +444,6 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, clock):
         pygame.display.update()
         clock.tick(settings.FPS)
 
-
-def show_main_menu(screen, main_menu, options_menu, help_menu, clock):
-    """
-    Wrapper around run_main_menu for compatibility; returns (choice, screen, windowed_size).
-    """
-    return run_main_menu(
-        screen,
-        main_menu,
-        options_menu,
-        help_menu,
-        clock
-    )
 
 def toggle_fullscreen(screen):
     """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
@@ -495,5 +482,4 @@ def toggle_fullscreen(screen):
     # Resize first so scale-dependent assets recompute, then convert surfaces safely.
  #   settings.resize(*screen.get_size())  # Recompute sizes based on new window.
  #   settings._convert_surfaces_for_display(screen)
-    return
 

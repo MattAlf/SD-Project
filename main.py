@@ -9,7 +9,6 @@ from state_manager import run_app
 
 pygame.init()
 
-info = pygame.display.Info()  # Grab current display info
 settings.resize(settings.DEFAULT_WINDOW_WIDTH, settings.DEFAULT_WINDOW_HEIGHT)  # Apply windowed size to all scalable settings
 
 # Create the window and remember windowed size for toggling fullscreen

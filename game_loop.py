@@ -3,7 +3,7 @@
 import random
 import pygame
 from pygame.locals import *
-from entity import *
+from entity import Entity, Player, Bullet, ShieldPickup, ShieldEffect, Dragon, Fireball, Baddies, Platform, Ground, Background
 from settings import settings, terminate
 
 
