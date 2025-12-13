@@ -64,7 +64,7 @@ class Player(pygame.sprite.Sprite):
         self.on_platform = False
         self.attack_right = False
         self.attack_left = False
-        self.drop_through = False  # When true, player will not land on platforms
+        self.drop_through = False
 
     def handle_input(self, events, ground_group, platform_group, spear_group):
         for event in events:
@@ -73,7 +73,7 @@ class Player(pygame.sprite.Sprite):
             if event.type == KEYDOWN:
                 if event.key in (K_UP, K_w) and (self.on_ground or self.on_platform):
                     self.jump(ground_group, platform_group)
-                if event.key == K_SPACE and (not self.attack_left and not self.attack_right):
+                if event.key in (K_SPACE, K_RETURN, K_KP_ENTER) and (not self.attack_left and not self.attack_right):
                     self.attack(spear_group)
                 if event.key == K_DOWN and self.on_platform:
                     self.drop_through = True
