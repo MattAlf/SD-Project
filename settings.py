@@ -1,8 +1,12 @@
 import os
+import sys
 import pygame
 from pathlib import Path  # Used to locate asset files relative to this script.
 
 
+def terminate():
+    pygame.quit()
+    sys.exit()
 class Settings:
     """Stores tunable values and scales them to the current screen size."""
 
@@ -20,8 +24,10 @@ class Settings:
         # Load raw; we'll convert after a display mode is set.
         # Menu related images
         self.MAIN_MENU_IMAGE = pygame.image.load(assets_dir / "main_menu.png")
-        self.PAUSED_MENU_IMAGE = pygame.image.load(assets_dir / "pause_menu.png")
+        self.PAUSED_MENU_IMAGE = pygame.image.load(assets_dir / "paused_menu.png")
         self.HELP_MENU_IMAGE = pygame.image.load(assets_dir / "help_menu.png")
+        self.GAME_OVER_MENU_IMAGE = pygame.image.load(assets_dir / "game_over_menu.png")
+        self.OPTIONS_MENU_IMAGE = pygame.image.load(assets_dir / "options_menu.png")
         self.HELP_ICON = pygame.image.load(assets_dir / "help_icon.png")
         self.HELP_ICON = pygame.transform.smoothscale(self.HELP_ICON, (24, 24))
 
@@ -302,6 +308,8 @@ class Settings:
             self.MAIN_MENU_IMAGE = self.MAIN_MENU_IMAGE.convert()
             self.PAUSED_MENU_IMAGE = self.PAUSED_MENU_IMAGE.convert()
             self.HELP_MENU_IMAGE = self.HELP_MENU_IMAGE.convert()
+            self.GAME_OVER_MENU_IMAGE = self.GAME_OVER_MENU_IMAGE.convert()
+            self.OPTIONS_MENU_IMAGE = self.OPTIONS_MENU_IMAGE.convert()
             self.HELP_ICON = self.HELP_ICON.convert_alpha()
             self.GRASS_IMAGE = self.GRASS_IMAGE.convert_alpha()
             self.BACKGROUND_LAYERS = [img.convert_alpha() for img in self.BACKGROUND_LAYERS]

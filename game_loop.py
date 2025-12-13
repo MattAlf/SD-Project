@@ -4,7 +4,7 @@ import random
 import pygame
 from pygame.locals import *
 from entity import *
-from functions import terminate
+from settings import terminate
 
 
 def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over_sound):

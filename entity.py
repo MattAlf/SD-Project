@@ -1,7 +1,6 @@
 import pygame
 from pygame.locals import *
-from functions import terminate
-from settings import settings
+from settings import settings, terminate
 import random
 
 

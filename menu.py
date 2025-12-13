@@ -2,8 +2,7 @@
 import sys
 import pygame
 from pygame.locals import *
-from settings import settings
-from functions import terminate
+from settings import settings, terminate
 
 BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_SPACING, PANEL_SPACING = 260, 45, 20, 10
 BUTTON_BASE = (20, 20, 20, 180)
@@ -168,7 +167,7 @@ class MainMenu:
         self.create_buttons()
 
     def create_buttons(self):
-        self.buttons = build_buttons(['Start Game', 'Options', 'Exit'], self.font)
+        self.buttons = build_buttons(['Start Game', 'Options', 'Exit'], self.font, center_ratio=0.6)
         self.help_button = build_help_button(self.font)
 
     def draw(self, surface):
@@ -206,7 +205,7 @@ class OptionsMenu:
         self.create_buttons()
 
     def draw(self, surface):
-        background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit menu art to window.
+        background = pygame.transform.scale(settings.OPTIONS_MENU_IMAGE, surface.get_size())  # Fit menu art to window.
         surface.blit(background, (0, 0))
 
         # Draw fullscreen + back buttons
@@ -375,7 +374,7 @@ class GameOverMenu:
         self.help_button = build_help_button(self.font)
 
     def draw(self, surface, score, kill_counter):
-        background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())
+        background = pygame.transform.scale(settings.GAME_OVER_MENU_IMAGE, surface.get_size())
         surface.blit(background, (0, 0))
 
         title = self.font.render('Game Over', True, 'white')
