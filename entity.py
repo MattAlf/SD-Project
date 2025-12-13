@@ -384,10 +384,11 @@ class Platform(Entity):
     def __init__(self):
         image = settings.PLATFORM_IMAGE
         self.height = settings.PLATFORM_HEIGHT
-        self.width = settings.PLATFORM_WIDTH
+        self.width = random.randint(settings.PLATFORM_WIDTH/2, settings.PLATFORM_WIDTH)
         super().__init__(image, self.width, self.height)
-        self.rect.left = settings.WINDOW_WIDTH
-        self.rect.top = random.randint(0, settings.WINDOW_HEIGHT - self.height)
+        self.rect.left = random.randint(settings.WINDOW_WIDTH, settings.WINDOW_WIDTH + self.width)
+        self.rect.top = random.randint(300, settings.WINDOW_HEIGHT - self.height*3)
+        
 
     def update(self):
         self.rect.x -= settings.PLATFORM_SPEED

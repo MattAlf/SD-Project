@@ -118,7 +118,7 @@ class Settings:
         self.ground_group = None
 
         self._base_baddie_rate = 20  # Base spawn cadence for enemies.
-        self._base_platform_rate = 60  # Base spawn cadence for platforms.
+        self._base_platform_rate = 40  # Base spawn cadence for platforms.
         self.PLAYER_STARTING_LIVES = 3
         self.PLAYER_INVULNERABILITY_TIME = 2000  # ms
         self.SHIELD_DURATION_TIME = 5000  # ms
@@ -151,7 +151,7 @@ class Settings:
         # World sizing (scaled by s with minimums to keep things visible).
         self.GROUND_HEIGHT = max(8, int(10 * s))
         self.PLATFORM_HEIGHT = max(30, int(30 * s))
-        self.PLATFORM_WIDTH = max(120, int(250 * s))
+        self.PLATFORM_WIDTH = max(90, int(200 * s))
         self.PLATFORM_SPEED = max(2, int(5 * s))
 
         self.PLAYER_HEIGHT = max(80, int(200 * s))
@@ -171,8 +171,8 @@ class Settings:
 
         self.BADDIE_MIN_SIZE = max(40, int(60 * s))
         self.BADDIE_MAX_SIZE = max(self.BADDIE_MIN_SIZE, int(80 * s))
-        self.BADDIE_MIN_SPEED = max(2, int(2 * s))
-        self.BADDIE_MAX_SPEED = max(self.BADDIE_MIN_SPEED + 1, int(8 * s))
+        self.BADDIE_MIN_SPEED = max(5, int(5 * s))
+        self.BADDIE_MAX_SPEED = max(self.PLATFORM_SPEED + 10, self.PLATFORM_SPEED)
 
         self.SHIELD_PICKUP_SIZE = max(20, int(self.SHIELD_PICKUP_SIZE_BASE * s))
         self.SHIELD_PICKUP_SCROLL_SPEED = max(2, int(self.SHIELD_PICKUP_SCROLL_SPEED_BASE * s))
