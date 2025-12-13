@@ -64,16 +64,20 @@ class Player(pygame.sprite.Sprite):
         self.on_platform = False
         self.attack_right = False
         self.attack_left = False
+        self.drop_through = False  # When true, player will not land on platforms
 
     def handle_input(self, events, ground_group, platform_group, spear_group):
         for event in events:
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
-                if event.key in (K_SPACE, K_UP, K_w) and (self.on_ground or self.on_platform):
+                if event.key in (K_UP, K_w) and (self.on_ground or self.on_platform):
                     self.jump(ground_group, platform_group)
-                if event.key in (K_DOWN, K_s) and (not self.attack_left and not self.attack_right):
+                if event.key == K_SPACE and (not self.attack_left and not self.attack_right):
                     self.attack(spear_group)
+                if event.key == K_DOWN and self.on_platform:
+                    self.drop_through = True
+                    self.velocity.x = -settings.PLATFORM_SPEED  # keep platform inertia while dropping
 
         keys = pygame.key.get_pressed()
         self.run_left = keys[K_LEFT] or keys[K_a]
@@ -107,7 +111,8 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.animate(self.player_images['PLAYER_IDLE_LEFT'], settings.PLAYER_ANIMATION_SLOWER)
 
-        self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
+        if not self.drop_through:
+            self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
         self.velocity += self.acceleration
         self.position += self.velocity + 0.5 * self.acceleration
 
@@ -137,10 +142,16 @@ class Player(pygame.sprite.Sprite):
 
     def check_platform_collisions(self, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
-        if touched_platforms and self.velocity.y > 0 and self.rect.bottom < touched_platforms[0].rect.bottom:
+        if (
+            touched_platforms
+            and not self.drop_through
+            and self.velocity.y > 0
+            and self.rect.bottom < touched_platforms[0].rect.bottom
+        ):
             self.position.y = touched_platforms[0].rect.top
             self.position.x -= settings.PLATFORM_SPEED
             self.velocity.y = 0
+            self.drop_through = False
             self.on_platform = True
             self.in_a_jump = False
         else:
@@ -151,6 +162,7 @@ class Player(pygame.sprite.Sprite):
         if touched_ground:
             self.position.y = touched_ground[0].rect.top
             self.velocity.y = 0
+            self.drop_through = False
             self.on_ground = True
             self.in_a_jump = False
         else:
@@ -165,7 +177,11 @@ class Player(pygame.sprite.Sprite):
     def jump(self, ground_group, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
         touched_ground = pygame.sprite.spritecollide(self, ground_group, False)
-        condition_platform = touched_platforms and self.rect.bottom <= touched_platforms[0].rect.top + settings.PLATFORM_HEIGHT // 2
+        condition_platform = (
+            touched_platforms
+            and not self.drop_through
+            and self.rect.bottom <= touched_platforms[0].rect.top + settings.PLATFORM_HEIGHT // 2
+        )
         condition_ground = touched_ground and self.rect.bottom <= touched_ground[0].rect.top + settings.GROUND_HEIGHT // 2
         if condition_platform or condition_ground:
             self.velocity.y = -1 * self.PLAYER_JUMP_STRENGTH
