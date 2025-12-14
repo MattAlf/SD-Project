@@ -154,9 +154,11 @@ class HelpMenu:
 
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
+            settings.BUTTON_SOUND.play()
             return 'BACK'
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
+                settings.BUTTON_SOUND.play()
                 if i == 0:
                     return 'BACK'
         return None
@@ -180,9 +182,11 @@ class MainMenu:
 
     def handle_event(self, event):
         if self.help_button.is_clicked(event):
+            settings.BUTTON_SOUND.play()
             return 'HELP'
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
+                settings.BUTTON_SOUND.play()
                 if i == 0:
                     return 'START_GAME'
                 elif i == 1:
@@ -241,15 +245,18 @@ class OptionsMenu:
 
         # Escape → back
         if event.type == KEYDOWN and event.key == K_ESCAPE:
+            settings.BUTTON_SOUND.play()
             return "BACK"
 
         # Help button
         if self.help_button.is_clicked(event):
+            settings.BUTTON_SOUND.play()
             return 'HELP'
         
         # Regular buttons
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
+                settings.BUTTON_SOUND.play()
                 if i == 0:
                     return "TOGGLE_FULLSCREEN"
                 elif i == 1:
@@ -347,13 +354,16 @@ class PauseMenu:
 
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
+            settings.BUTTON_SOUND.play()
             return "RESUME"
         
         if self.help_button.is_clicked(event):
+            settings.BUTTON_SOUND.play()
             return 'HELP'
 
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
+                settings.BUTTON_SOUND.play()
                 if i == 0:
                     return "RESUME"
                 elif i == 1:
@@ -397,13 +407,16 @@ class GameOverMenu:
 
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
+            settings.BUTTON_SOUND.play()
             return "MAIN_MENU"
         
         if self.help_button.is_clicked(event):
+            settings.BUTTON_SOUND.play()
             return 'HELP'
 
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
+                settings.BUTTON_SOUND.play()
                 if i == 0:
                     return "RETRY"
                 if i == 1:
@@ -415,6 +428,12 @@ class GameOverMenu:
 def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock):
     """Main menu loop; exits when the user starts the game or quits."""
     pygame.mixer.music.stop()
+    try:
+        pygame.mixer.music.load(settings.MENU_MUSIC_PATH)
+        pygame.mixer.music.set_volume(settings.music_volume)
+        pygame.mixer.music.play(-1)
+    except pygame.error:
+        pass  # Fail silently if the menu track is unavailable.
     current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
     while True:
         for event in pygame.event.get():  # Poll menu events.
