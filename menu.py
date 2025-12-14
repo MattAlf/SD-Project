@@ -468,7 +468,6 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock)
         pygame.display.update()
         clock.tick(settings.FPS)
 
-
 def toggle_fullscreen(screen):
     """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
 

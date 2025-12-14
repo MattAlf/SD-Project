@@ -198,11 +198,6 @@ class Settings:
         # Stores the result.
         self.PLAYER_IMAGES = scaled
 
-        # Stores draw size for later.
-        idle_frame = scaled["PLAYER_IDLE_RIGHT"][0]
-        self.PLAYER_DRAW_WIDTH = idle_frame.get_width()
-        self.PLAYER_DRAW_HEIGHT = idle_frame.get_height()
-
     def convert_background_images(self):
         converted_bg_img_and_speed = []
 
@@ -257,7 +252,7 @@ class Settings:
 
         converted_help_icon = self.HELP_ICON.convert_alpha()
         self.HELP_ICON = pygame.transform.smoothscale(converted_help_icon, (50, 50))
-        
+
         converted_fullscreen_icon = self.FULLSCREEN_ICON.convert_alpha()
         self.FULLSCREEN_ICON = pygame.transform.smoothscale(converted_fullscreen_icon, (50, 50))
         # Enemy related images.

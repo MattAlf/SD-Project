@@ -20,42 +20,59 @@ class Entity(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        # The current image index will be useful to iterate through the animations.
         self.current_image_index = 0
         self.player_images = settings.PLAYER_IMAGES
 
         original_image = self.player_images['PLAYER_IDLE_RIGHT'][0]
-        self.draw_height = settings.PLAYER_DRAW_HEIGHT
-        self.draw_width = settings.PLAYER_DRAW_WIDTH
+        self.draw_height = original_image.get_height()
+        self.draw_width = original_image.get_width()
         self.image = original_image
 
+        # We define the hitbox of the player. We want the hitbox to be around the player's armor and it should
+        # not take into account the spear nor the cape of the player. Also the image has quite a lot of empty space
+        # around the knight, so we want to ignore that.
         hitbox_width = int(self.draw_width * settings.PLAYER_HITBOX_IMAGE_WIDTH_FACTOR)
         hitbox_height = int(self.draw_height * settings.PLAYER_HITBOX_IMAGE_HEIGHT_FACTOR)
+        # Here we define the hitbox offset. In order to center the hitbox (which will be a basic rectangle) on
+        # the player's image, we have to calculate by how much we have to shift the image before we draw it in
+        # order to have the hitbox and the knight drawn inside of it.
         self.HITBOX_X_OFFSET = int(self.draw_width * settings.PLAYER_HITBOX_X_OFFSET_FACTOR)
         self.HITBOX_Y_OFFSET = int(self.draw_height * settings.PLAYER_HITBOX_Y_OFFSET_FACTOR)
+        # Here the rectangle that represents the hitbox is drawn.
         self.rect = pygame.Rect(0, 0, hitbox_width, hitbox_height)
-        self.rect.bottomleft = (0, settings.WINDOW_HEIGHT - settings.PLATFORM_HEIGHT)
+        # The rectangle (hitbox) is repositioned to the left of the screen. (player's starting position)
+        self.rect.bottomleft = (10, settings.WINDOW_HEIGHT - settings.GROUND_HEIGHT)
+        # This is the rectangle associated with the full image. So it has also the empty spaces around it.
         self.full_image_rect = self.image.get_rect()
-        self.full_image_rect.bottomleft = (
-            self.rect.left - self.HITBOX_X_OFFSET,
-            self.rect.bottom + self.HITBOX_Y_OFFSET,
-        )
+        # Here we reposition the image to place the knight inside of the hitbox.
+        self.full_image_rect.bottomleft = (self.rect.left - self.HITBOX_X_OFFSET, self.rect.bottom + self.HITBOX_Y_OFFSET)
 
+        # Kinematic vectors (x,y).
         self.position = pygame.math.Vector2(self.rect.left, self.rect.bottom)
         self.velocity = pygame.math.Vector2(0, 0)
         self.acceleration = pygame.math.Vector2(0, 0)
+        # Kinematic constants.
         self.HORIZONTAL_ACCELERATION = settings.HORIZONTAL_ACCELERATION
         self.HORIZONTAL_FRICTION = settings.HORIZONTAL_FRICTION
         self.VERTICAL_ACCELERATION = settings.VERTICAL_ACCELERATION
         self.PLAYER_JUMP_STRENGTH = settings.PLAYER_JUMP_STRENGTH
-
+        # This is the cooldown that the player will have to wait before being able to throw another spear.
         self.attack_cooldown = settings.SPEAR_ATTACK_COOLDOWN
+        # We set 0 as the initial last attack time. This allows the player to start shooting
+        # 'settings.SPEAR_ATTACK_COOLDOWN' time after the beginning of the game.
         self.last_attack_time = 0
+
+        # Setting the variables regarding the lives and shield.
         self.lives = settings.PLAYER_STARTING_LIVES
+        # These two timers will be used to track when will the corresponding effect need to be disabled after being activated.
         self.invulnerability_timer = 0
         self.shield_timer = 0
+        # We set the variables to false.
         self.has_shield = False
         self.is_invulnerable = False
         self.dead = False
+        # We also set the movement variables to False.
         self.run_left = False
         self.run_right = False
         self.in_a_jump = False
