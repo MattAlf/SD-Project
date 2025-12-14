@@ -39,6 +39,7 @@ class Settings:
         self.SHIELD_PICKUP_IMAGE = pygame.image.load(assets_dir / "assets/shield_pickup.png")
         self.DRAGON_IMAGE = pygame.image.load(assets_dir / "assets/dragon.png")
         self.FIREBALL_IMAGE = pygame.image.load(assets_dir / "assets/fire_arrow.png")
+        self.WOOD_PANEL_IMAGE = pygame.image.load(assets_dir / "assets/wood_panel.png")
         self.BACKGROUND_LAYERS = [
             pygame.image.load(assets_dir / "background_layers/1_sky.png"),
             pygame.image.load(assets_dir / "background_layers/2_clouds.png"),
@@ -140,7 +141,7 @@ class Settings:
         self.DRAGON_ATTACK_COOLDOWN = 1000  # ms
         self.FIREBALL_SIZE_BASE = 30
         self.FIREBALL_SPEED_BASE = 5
-
+        
         # Initialize with the base size; the game will call resize with the actual display size.
         self.resize(self.DEFAULT_WINDOW_WIDTH, self.DEFAULT_WINDOW_HEIGHT)
 
@@ -257,16 +258,36 @@ class Settings:
         windowed_size = (self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         return screen, windowed_size
 
-    def draw_score(self, surface, font, score, x=10, y=0, color=(0, 0, 122)):
-        """Render the score text to the given surface."""
-        text_surface = font.render(f"Score: {score}", True, color)
-        text_rect = text_surface.get_rect(topleft=(x, y))
-        surface.blit(text_surface, text_rect)
+    def draw_hud(self, surface, font, score, high_score, kill_counter, x=10, y=10):
+    
+        self.score = score 
+        self.high_score = high_score 
+        self.kill_counter = kill_counter
 
-    def draw_kill_counter(self, surface, font, kill_counter, x=10, y=30, color =(0,0,122)):
-        text_surface = font.render(f"Kill: {kill_counter}", True, color)
-        text_rect = text_surface.get_rect(topleft=(x, y))
-        surface.blit(text_surface, text_rect)
+        if self.score > self.high_score:
+            self.high_score = self.score
+
+        panel_rect = self.WOOD_PANEL_IMAGE.get_rect(topleft=(x, y))
+        surface.blit(self.WOOD_PANEL_IMAGE, panel_rect)
+
+        score_surf = font.render(f"Score: {self.score}", True, (245, 245, 220))
+        best_surf  = font.render(f"Best: {self.high_score}", True, (245, 245, 220))
+        kill_surf  = font.render(f"Kills: {self.kill_counter}", True, (245, 245, 220))
+
+        left_x = panel_rect.left
+    
+        section_height = panel_rect.height / 3
+    
+        score_rect = score_surf.get_rect(midleft=(left_x + 20 , panel_rect.top + (section_height * 0.5 + 10)))
+        best_rect = best_surf.get_rect(midleft=(left_x + 20, panel_rect.top + (section_height * 1.5)))
+        kill_rect = kill_surf.get_rect(midleft=(left_x + 20, panel_rect.top + (section_height * 2.5 - 10)))
+
+
+        surface.blit(score_surf, score_rect)
+        surface.blit(best_surf, best_rect)
+        surface.blit(kill_surf, kill_rect)
+
+
 
     def draw_lives(self, surface, player):
         """Draw the player's remaining lives as hearts on the top-right of the screen."""

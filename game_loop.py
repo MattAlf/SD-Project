@@ -7,7 +7,7 @@ from entity import *
 from functions import terminate
 
 
-def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over_sound):
+def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over_sound, global_high_score):
     """Run a single game round; returns a next action when the player pauses or dies."""
     background_group, ground_group = settings.build_static_layers()  # Static scenery.
 
@@ -22,6 +22,7 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
     dragon_group = pygame.sprite.Group()
     fireball_group = pygame.sprite.Group()
     score = 0
+    high_score = global_high_score 
     kill_counter = 0
     Bullet.kill_count = 0
     baddie_add_counter = 0
@@ -154,8 +155,8 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
 
         # Draw everything.
         background_group.draw(screen)
-        settings.draw_score(screen, font, score)
-        settings.draw_kill_counter(screen, font, kill_counter)
+        settings.draw_hud(screen, font, score, high_score, kill_counter, x=10, y=10)
+
         shield_pickup_group.draw(screen)
         screen.blit(player.image, player.full_image_rect)
         shield_effect_group.draw(screen)
@@ -177,8 +178,9 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
         pygame.display.update()  # Present frame.
 
         if player.dead:
-            score += 50 * kill_counter
-            break
+            final_score = score + 50 * kill_counter
+            new_high_score = max(global_high_score, final_score)
+            return new_high_score
 
         fps_clock.tick(settings.FPS)  # Control FPS inside game loop.
 
