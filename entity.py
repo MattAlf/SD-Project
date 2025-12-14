@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.current_image_index = 0
-        self.player_images = settings.PLAYER_SCALED_IMAGES
+        self.player_images = settings.PLAYER_IMAGES
 
         original_image = self.player_images['PLAYER_IDLE_RIGHT'][0]
         self.draw_height = settings.PLAYER_DRAW_HEIGHT

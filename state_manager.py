@@ -1,9 +1,7 @@
 from menu import run_main_menu
 from game_loop import run_game_round
-from settings import settings
 
-
-def run_app(screen, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock, font):
+def run_app(screen, main_menu, options_menu, pause_menu, game_over_menu, help_menu, story_menu, clock, font):
     """
     Coordinates the main menu and gameplay loops.
     Returns when the process exits.
@@ -17,6 +15,7 @@ def run_app(screen, main_menu, options_menu, pause_menu, game_over_menu, help_me
             main_menu,
             options_menu,
             help_menu,
+            story_menu,
             clock
         )
 
@@ -26,8 +25,7 @@ def run_app(screen, main_menu, options_menu, pause_menu, game_over_menu, help_me
                 screen,
                 pause_menu,
                 game_over_menu,
-                font,
-                settings.GAME_OVER_SOUND
+                font
             )
             if result == "MAIN_MENU":
                 break

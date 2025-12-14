@@ -7,7 +7,7 @@ from entity import Entity, Player, Bullet, ShieldPickup, ShieldEffect, Dragon, F
 from settings import settings, terminate
 
 
-def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
+def run_game_round(screen, pause_menu, game_over_menu, font):
     """Run a single game round; returns a next action when the player pauses or dies."""
     background_group, ground_group = settings.initialize_static_layers(screen)  # Static scenery.
 
@@ -102,13 +102,13 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
 
         # Add new ghosts (only if dragon hasn't spawned).
         ghost_add_counter += 1
-        if ghost_add_counter >= settings.ADD_NEW_GHOST_RATE and not dragon_alive:
+        if ghost_add_counter >= settings.GHOST_SPAWN_RATE and not dragon_alive:
             ghost_add_counter = 0
             ghost_group.add(Ghosts())
 
         # Add new platform at a fixed cadence.
         platform_add_counter += 1
-        if platform_add_counter >= settings.ADD_NEW_PLATFORM_RATE:
+        if platform_add_counter >= settings.PLATFROM_SPAWN_RATE:
             platform_add_counter = 0
             for i in range (random.randint(1,2)):
                 platform_group.add(Platform())
@@ -184,7 +184,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
 
     # Show the game over screen with retry/main menu options.
     pygame.mixer.music.stop()
-    game_over_sound.play()
+    settings.ALL_SOUND_EFFECTS['GAME_OVER_SOUND'].play()
     game_over_menu.create_buttons()
 
     while True:
@@ -195,10 +195,10 @@ def run_game_round(screen, pause_menu, game_over_menu, font, game_over_sound):
 
             action = game_over_menu.handle_event(event)
             if action == "RETRY":
-                game_over_sound.stop()
+                settings.ALL_SOUND_EFFECTS['GAME_OVER_SOUND'].stop()
                 return "RETRY"
             if action == "MAIN_MENU":
-                game_over_sound.stop()
+                settings.ALL_SOUND_EFFECTS['GAME_OVER_SOUND'].stop()
                 return "MAIN_MENU"
             if action == "EXIT":
                 pygame.quit()

@@ -12,11 +12,9 @@ HELP_BUTTON_MARGIN = 12
 FULLSCREEN_BUTTON_SIZE = 70
 FULLSCREEN_BUTTON_MARGIN = 12
 
-
 def build_help_button(font):
-    screen_width, _ = pygame.display.get_surface().get_size()
     rect = pygame.Rect(
-        screen_width - HELP_BUTTON_SIZE - HELP_BUTTON_MARGIN,
+        settings.WINDOW_WIDTH - HELP_BUTTON_SIZE - HELP_BUTTON_MARGIN,
         HELP_BUTTON_MARGIN,
         HELP_BUTTON_SIZE,
         HELP_BUTTON_SIZE
@@ -29,7 +27,6 @@ def build_help_button(font):
     )
 
 def build_fullscreen_button(font):
-    screen_width, _ = pygame.display.get_surface().get_size()
     rect = pygame.Rect(
         FULLSCREEN_BUTTON_MARGIN,
         FULLSCREEN_BUTTON_MARGIN,
@@ -44,11 +41,9 @@ def build_fullscreen_button(font):
     )
 
 def build_buttons(labels, font, center_ratio=0.5):
-    """Return Buttons centered in the current window."""
-    screen_width, screen_height = pygame.display.get_surface().get_size()
     total_height = len(labels) * BUTTON_HEIGHT + (len(labels) - 1) * BUTTON_SPACING
-    x_left = screen_width // 2 - BUTTON_WIDTH // 2
-    y_start = int((screen_height * center_ratio) - (total_height // 2))
+    x_left = settings.WINDOW_WIDTH // 2 - BUTTON_WIDTH // 2
+    y_start = int((settings.WINDOW_HEIGHT * center_ratio) - (total_height // 2))
     button_list = []
     for i, text in enumerate(labels):
         button_list.append(
@@ -59,7 +54,6 @@ def build_buttons(labels, font, center_ratio=0.5):
                 )
             )
     return button_list
-
 
 class Button:
     def __init__(self, text, rect, font, icon=None):
@@ -84,7 +78,6 @@ class Button:
 
     def is_clicked(self, event):
         return event.type == MOUSEBUTTONUP and event.button == 1 and self.rect.collidepoint(event.pos)
-
 
 # Drag-able horizontal volume slider.
 class VolumeSlider:
@@ -152,6 +145,33 @@ class VolumeSlider:
         )
         surface.blit(slider_surface, self.rect.topleft)
 
+class StoryMenu:
+    def __init__(self, font):
+        self.font = font
+        self.buttons = []
+        self.create_buttons()
+
+    def create_buttons(self):
+        self.buttons = build_buttons(['Back'], self.font, center_ratio=0.92)
+        self.fullscreen_button = build_fullscreen_button(self.font)
+
+    def draw(self, surface):
+        surface.blit(settings.STORY_MENU_IMAGE, (0, 0))  # Paint background.
+        for button in self.buttons:  # Draw menu buttons.
+            button.draw(surface)
+        self.fullscreen_button.draw(surface)
+
+    def handle_event(self, event):
+        if self.fullscreen_button.is_clicked(event):
+            return 'TOGGLE_FULLSCREEN'
+        if event.type == KEYDOWN and event.key == K_ESCAPE:
+            return 'BACK'
+        for i, button in enumerate(self.buttons):
+            if button.is_clicked(event):
+                if i == 0:
+                    return 'BACK'
+        return None
+
 class HelpMenu:
     def __init__(self, font):
         self.font = font
@@ -163,8 +183,7 @@ class HelpMenu:
         self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface):
-        background = pygame.transform.scale(settings.HELP_MENU_IMAGE, surface.get_size())  # Fit background to window.
-        surface.blit(background, (0, 0))  # Paint background.
+        surface.blit(settings.HELP_MENU_IMAGE, (0, 0))  # Paint background.
         for button in self.buttons:  # Draw menu buttons.
             button.draw(surface)
         self.fullscreen_button.draw(surface)
@@ -186,13 +205,12 @@ class MainMenu:
         self.create_buttons()
 
     def create_buttons(self):
-        self.buttons = build_buttons(['Start Game', 'Options', 'Exit'], self.font, center_ratio=0.6)
+        self.buttons = build_buttons(['Start Game', 'Options', 'Story', 'Exit'], self.font, center_ratio=0.6)
         self.help_button = build_help_button(self.font)
         self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface):
-        background = pygame.transform.scale(settings.MAIN_MENU_IMAGE, surface.get_size())  # Fit background to window.
-        surface.blit(background, (0, 0))  # Paint background.
+        surface.blit(settings.MAIN_MENU_IMAGE, (0, 0))  # Paint background.
         for button in self.buttons:  # Draw menu buttons.
             button.draw(surface)
         self.help_button.draw(surface)
@@ -210,6 +228,8 @@ class MainMenu:
                 elif i == 1:
                     return 'OPTIONS'
                 elif i == 2:
+                    return 'STORY'
+                elif i == 3:
                     return 'EXIT'
         return None
 
@@ -222,8 +242,7 @@ class OptionsMenu:
         self.create_buttons()
 
     def draw(self, surface):
-        background = pygame.transform.scale(settings.OPTIONS_MENU_IMAGE, surface.get_size())  # Fit menu art to window.
-        surface.blit(background, (0, 0))
+        surface.blit(settings.OPTIONS_MENU_IMAGE, (0, 0))
 
         # Draw fullscreen + back buttons
         for button in self.buttons:
@@ -252,7 +271,7 @@ class OptionsMenu:
             settings.sound_effects_volume = self.sound_effects_volume
             self.sound_effects_panel[0].text = f"Sounds: {int(self.sound_effects_volume * 100)}%"
             # Apply new volume to all SFX
-            for sound in settings.ALL_SOUND_EFFECTS:
+            for sound in settings.ALL_SOUND_EFFECTS.values():
                 sound.set_volume(self.sound_effects_volume)
             return None
 
@@ -284,18 +303,15 @@ class OptionsMenu:
         self.help_button = build_help_button(self.font)
         self.fullscreen_button = build_fullscreen_button(self.font)
 
-        # --- create both sliders and panels ---
-        screen_width, screen_height = pygame.display.get_surface().get_size()
-
         # SFX slider under it
-        self.sound_effects_slider = VolumeSlider(screen_width // 2, screen_height // 2)
+        self.sound_effects_slider = VolumeSlider(settings.WINDOW_WIDTH // 2, settings.WINDOW_HEIGHT // 2)
         self.sound_effects_slider.set_value(self.sound_effects_volume)# Sync slider knob to current volume.
 
         self.sound_effects_panel = build_buttons([f"Sounds: {int(self.sound_effects_volume * 100)}%"], self.font)
         self.sound_effects_panel[0].rect.bottom = self.sound_effects_slider.rect.top - PANEL_SPACING
         
         # Music slider at upper-middle
-        self.music_slider = VolumeSlider(screen_width // 2, (screen_height // 2) - 90)
+        self.music_slider = VolumeSlider(settings.WINDOW_WIDTH // 2, (settings.WINDOW_HEIGHT // 2) - 90)
         self.music_slider.set_value(self.music_volume)# Sync slider knob to current volume.
 
         self.music_panel = build_buttons([f"Music: {int(self.music_volume * 100)}%"], self.font)
@@ -313,8 +329,7 @@ class PauseMenu:
         self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface):
-        background = pygame.transform.scale(settings.PAUSED_MENU_IMAGE, surface.get_size())
-        surface.blit(background, (0, 0))
+        surface.blit(settings.PAUSED_MENU_IMAGE, (0, 0))
 
         for b in self.buttons:
             b.draw(surface)
@@ -342,7 +357,6 @@ class PauseMenu:
                     return "EXIT"
         return None
 
-
 class GameOverMenu:
     def __init__(self, font):
         self.font = font
@@ -355,19 +369,18 @@ class GameOverMenu:
         self.fullscreen_button = build_fullscreen_button(self.font)
 
     def draw(self, surface, score, kill_counter):
-        background = pygame.transform.scale(settings.GAME_OVER_MENU_IMAGE, surface.get_size())
-        surface.blit(background, (0, 0))
+        surface.blit(settings.GAME_OVER_MENU_IMAGE, (0, 0))
 
         title = self.font.render('Game Over', True, 'white')
-        title_rect = title.get_rect(center=(surface.get_width() // 2, surface.get_height() // 3))
+        title_rect = title.get_rect(center=(settings.WINDOW_WIDTH // 2, settings.WINDOW_HEIGHT // 3))
         surface.blit(title, title_rect)
 
         score_text = self.font.render(f'Score: {score}', True, 'white')
-        score_rect = score_text.get_rect(center=(surface.get_width() // 2, title_rect.bottom + 60))
+        score_rect = score_text.get_rect(center=(settings.WINDOW_WIDTH // 2, title_rect.bottom + 60))
         surface.blit(score_text, score_rect)
 
         kill_counter_text = self.font.render(f'kill: {kill_counter}', True, 'white')
-        kill_counter_rect = kill_counter_text.get_rect(center=(surface.get_width() // 2, (title_rect.bottom + score_rect.top)/2))
+        kill_counter_rect = kill_counter_text.get_rect(center=(settings.WINDOW_WIDTH // 2, (title_rect.bottom + score_rect.top)/2))
         surface.blit(kill_counter_text, kill_counter_rect)
 
         for b in self.buttons:
@@ -396,7 +409,7 @@ class GameOverMenu:
                     return "EXIT"
         return None
 
-def run_main_menu(screen, main_menu, options_menu, help_menu, clock):
+def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock):
     """Main menu loop; exits when the user starts the game or quits."""
     pygame.mixer.music.stop()
     current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
@@ -415,6 +428,8 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, clock):
                     current_menu = 'HELP'
                 elif result == 'TOGGLE_FULLSCREEN':
                     toggle_fullscreen(screen)
+                elif result == 'STORY':
+                    current_menu = 'STORY'
                 elif result == 'EXIT':
                     terminate()
 
@@ -434,12 +449,21 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, clock):
                 elif result == 'TOGGLE_FULLSCREEN':
                     toggle_fullscreen(screen)
 
+            elif current_menu == 'STORY':
+                result = story_menu.handle_event(event)
+                if result == 'BACK':
+                    current_menu = 'MAIN'
+                elif result == 'TOGGLE_FULLSCREEN':
+                    toggle_fullscreen(screen)
+                    
         if current_menu == "MAIN":
             main_menu.draw(screen)
         elif current_menu == 'HELP':
             help_menu.draw(screen)
         elif current_menu == 'OPTIONS':
             options_menu.draw(screen)
+        elif current_menu == 'STORY':
+            story_menu.draw(screen)
 
         pygame.display.update()
         clock.tick(settings.FPS)
