@@ -18,11 +18,11 @@ class Settings:
     BACKGROUND_SCROLL_SPEED_MULTIPLICATOR = 0.7
 
     # Ghost related values.
-    GHOST_MIN_SIZE = 30
-    GHOST_MAX_SIZE = 40
+    GHOST_MIN_SIZE = 40
+    GHOST_MAX_SIZE = 60
     GHOST_MIN_SPEED = 1
     GHOST_MAX_SPEED = 8
-    GHOST_SPAWN_RATE = 20 # It will be a spawn rate based on the FPS. (so 1 ghost every 20 frames)
+    GHOST_SPAWN_RATE = 50 # It will be a spawn rate based on the FPS. (so 1 ghost every 20 frames)
     
     # Platform related values.
     PLATFORM_HEIGHT = 30 # In pixels
@@ -81,39 +81,39 @@ class Settings:
         self.assets_dir = Path(__file__).parent # It makes locating the files more safe. (avoiding wrong directory problems)
         
         # Loading the menu related images.
-        self.MAIN_MENU_IMAGE = pygame.image.load(self.assets_dir / "menu_images/main_menu.png")
-        self.PAUSED_MENU_IMAGE = pygame.image.load(self.assets_dir / "menu_images/paused_menu.png")
-        self.HELP_MENU_IMAGE = pygame.image.load(self.assets_dir / "menu_images/help_menu.png")
-        self.GAME_OVER_MENU_IMAGE = pygame.image.load(self.assets_dir / "menu_images/game_over_menu.png")
-        self.OPTIONS_MENU_IMAGE = pygame.image.load(self.assets_dir / "menu_images/options_menu.png")
-        self.STORY_MENU_IMAGE = pygame.image.load(self.assets_dir / "menu_images/story_menu.png")
-        self.HELP_ICON = pygame.image.load(self.assets_dir / "menu_images/help_icon.png")
-        self.FULLSCREEN_ICON = pygame.image.load(self.assets_dir / "menu_images/fullscreen_icon.png")
+        self.MAIN_MENU_IMAGE = pygame.image.load(self.assets_dir / 'menu_images/main_menu.png')
+        self.PAUSED_MENU_IMAGE = pygame.image.load(self.assets_dir / 'menu_images/paused_menu.png')
+        self.HELP_MENU_IMAGE = pygame.image.load(self.assets_dir / 'menu_images/help_menu.png')
+        self.GAME_OVER_MENU_IMAGE = pygame.image.load(self.assets_dir / 'menu_images/game_over_menu.png')
+        self.OPTIONS_MENU_IMAGE = pygame.image.load(self.assets_dir / 'menu_images/options_menu.png')
+        self.STORY_MENU_IMAGE = pygame.image.load(self.assets_dir / 'menu_images/story_menu.png')
+        self.HELP_ICON = pygame.image.load(self.assets_dir / 'menu_images/help_icon.png')
+        self.FULLSCREEN_ICON = pygame.image.load(self.assets_dir / 'menu_images/fullscreen_icon.png')
 
         # Loading the game related images.
         # Enemy related images.
-        self.GHOST_IMAGE = pygame.image.load(self.assets_dir / "ghost.png")
-        self.DRAGON_IMAGE = pygame.image.load(self.assets_dir / "dragon.png")
-        self.FIREBALL_IMAGE = pygame.image.load(self.assets_dir / "fire_arrow.png")
+        self.GHOST_IMAGE = pygame.image.load(self.assets_dir / 'ghost.png')
+        self.DRAGON_IMAGE = pygame.image.load(self.assets_dir / 'dragon.png')
+        self.FIREBALL_IMAGE = pygame.image.load(self.assets_dir / 'fire_arrow.png')
         # Player related images.
-        self.SPEAR_IMAGE = pygame.image.load(self.assets_dir / "spear.png")
-        self.RED_HEART_IMAGE = pygame.image.load(self.assets_dir / "red_heart.png")
-        self.BLUE_HEART_IMAGE = pygame.image.load(self.assets_dir / "blue_heart.png")
-        self.SHIELD_EFFECT_IMAGE = pygame.image.load(self.assets_dir / "shield_effect.png")
-        self.SHIELD_PICKUP_IMAGE = pygame.image.load(self.assets_dir / "shield_pickup.png")
+        self.SPEAR_IMAGE = pygame.image.load(self.assets_dir / 'spear.png')
+        self.RED_HEART_IMAGE = pygame.image.load(self.assets_dir / 'red_heart.png')
+        self.BLUE_HEART_IMAGE = pygame.image.load(self.assets_dir / 'blue_heart.png')
+        self.SHIELD_EFFECT_IMAGE = pygame.image.load(self.assets_dir / 'shield_effect.png')
+        self.SHIELD_PICKUP_IMAGE = pygame.image.load(self.assets_dir / 'shield_pickup.png')
         # Scenery related images.
-        self.PLATFORM_IMAGE = pygame.image.load(self.assets_dir / "platform.png")
-        self.GROUND_IMAGE = pygame.image.load(self.assets_dir / "ground.png")
+        self.PLATFORM_IMAGE = pygame.image.load(self.assets_dir / 'platform.png')
+        self.GROUND_IMAGE_AND_SPEED = (pygame.image.load(self.assets_dir / 'ground.png'), 10 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
         # Tuples of the background image layer associated wiht its scrolling speed. The images loop horizontally and make the effect of an infinite image.
         self.BACKGROUND_IMAGES_AND_SPEEDS = [
-            (pygame.image.load(self.assets_dir / "background_layers/1_sky.png"), self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-            (pygame.image.load(self.assets_dir / "background_layers/2_clouds.png"), 2 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-            (pygame.image.load(self.assets_dir / "background_layers/3_mountain.png"), self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-            (pygame.image.load(self.assets_dir / "background_layers/4_clouds.png"), 3 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-            (pygame.image.load(self.assets_dir / "background_layers/5_ground.png"), 4 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-            (pygame.image.load(self.assets_dir / "background_layers/6_ground.png"), 7 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-            (pygame.image.load(self.assets_dir / "background_layers/7_ground.png"), 8 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
-            (pygame.image.load(self.assets_dir / "background_layers/8_plant.png"), 8 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
+            (pygame.image.load(self.assets_dir / 'background_layers/1_sky.png'), self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+            (pygame.image.load(self.assets_dir / 'background_layers/2_clouds.png'), 2 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+            (pygame.image.load(self.assets_dir / 'background_layers/3_mountain.png'), self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+            (pygame.image.load(self.assets_dir / 'background_layers/4_clouds.png'), 3 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+            (pygame.image.load(self.assets_dir / 'background_layers/5_ground.png'), 4 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+            (pygame.image.load(self.assets_dir / 'background_layers/6_ground.png'), 7 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+            (pygame.image.load(self.assets_dir / 'background_layers/7_ground.png'), 8 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
+            (pygame.image.load(self.assets_dir / 'background_layers/8_plant.png'), 8 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
         ]
         # The player is animated. So in order to store all of the different animations we created a dictionary.
         # Each key gives acces to the list with all of the images related to this action. We also had to flip the images
@@ -135,32 +135,32 @@ class Settings:
         for action in list(self.PLAYER_IMAGES.keys()):
             if 'RUN_RIGHT' in action:
                 for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f"player_animations/player_run_images/Knight_01__RUN_00{i}.png")
+                    img = pygame.image.load(self.assets_dir / f'player_animations/player_run_images/Knight_01__RUN_00{i}.png')
                     self.PLAYER_IMAGES['PLAYER_RUN_RIGHT'].append(img)
                     self.PLAYER_IMAGES['PLAYER_RUN_LEFT'].append(pygame.transform.flip(img, True, False))
             elif 'ATTACK_RIGHT' in action:
                 for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f"player_animations/player_attack_images/Knight_01__ATTACK_00{i}.png")
+                    img = pygame.image.load(self.assets_dir / f'player_animations/player_attack_images/Knight_01__ATTACK_00{i}.png')
                     self.PLAYER_IMAGES['PLAYER_ATTACK_RIGHT'].append(img)
                     self.PLAYER_IMAGES['PLAYER_ATTACK_LEFT'].append(pygame.transform.flip(img, True, False))
             elif 'DIE_RIGHT' in action:
                 for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f"player_animations/player_die_images/Knight_01__DIE_00{i}.png")
+                    img = pygame.image.load(self.assets_dir / f'player_animations/player_die_images/Knight_01__DIE_00{i}.png')
                     self.PLAYER_IMAGES['PLAYER_DIE_RIGHT'].append(img)
                     self.PLAYER_IMAGES['PLAYER_DIE_LEFT'].append(pygame.transform.flip(img, True, False))
             elif 'HURT_RIGHT' in action:
                 for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f"player_animations/player_hurt_images/Knight_01__HURT_00{i}.png")
+                    img = pygame.image.load(self.assets_dir / f'player_animations/player_hurt_images/Knight_01__HURT_00{i}.png')
                     self.PLAYER_IMAGES['PLAYER_HURT_RIGHT'].append(img)
                     self.PLAYER_IMAGES['PLAYER_HURT_LEFT'].append(pygame.transform.flip(img, True, False))
             elif 'IDLE_RIGHT' in action:
                 for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f"player_animations/player_idle_images/Knight_01__IDLE_00{i}.png")
+                    img = pygame.image.load(self.assets_dir / f'player_animations/player_idle_images/Knight_01__IDLE_00{i}.png')
                     self.PLAYER_IMAGES['PLAYER_IDLE_RIGHT'].append(img)
                     self.PLAYER_IMAGES['PLAYER_IDLE_LEFT'].append(pygame.transform.flip(img, True, False))
             elif 'JUMP_RIGHT' in action:
                 for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f"player_animations/player_jump_images/Knight_01__JUMP_00{i}.png")
+                    img = pygame.image.load(self.assets_dir / f'player_animations/player_jump_images/Knight_01__JUMP_00{i}.png')
                     self.PLAYER_IMAGES['PLAYER_JUMP_RIGHT'].append(img)
                     self.PLAYER_IMAGES['PLAYER_JUMP_LEFT'].append(pygame.transform.flip(img, True, False))
 
@@ -171,13 +171,13 @@ class Settings:
         # Loading the sound effects and the background music.
         # The sound effects are stored in a dictionary like for the player animations.
         self.ALL_SOUND_EFFECTS = {
-            'GAME_OVER_SOUND': pygame.mixer.Sound(self.assets_dir / "gameover.wav")
+            'GAME_OVER_SOUND': pygame.mixer.Sound(self.assets_dir / 'gameover.wav')
         }
         # Setting the sound effects volume level to self.sound_effects_volume for all soun effects.
         for sound in self.ALL_SOUND_EFFECTS.values():
             sound.set_volume(self.sound_effects_volume)
         # Loading the background music and setting it to self.music_volume volume level.
-        pygame.mixer.music.load(self.assets_dir / "background.mid")
+        pygame.mixer.music.load(self.assets_dir / 'background.mid')
         pygame.mixer.music.set_volume(self.music_volume)
 
     def convert_and_scale_player_images(self):
@@ -203,13 +203,42 @@ class Settings:
 
         for image, speed in self.BACKGROUND_IMAGES_AND_SPEEDS:
             converted_img = image.convert_alpha()
-            converted_bg_img_and_speed.append((converted_img, speed))
+            converted_scaled_img = pygame.transform.scale(converted_img, self.WINDOW_DIMENSIONS)
+            converted_bg_img_and_speed.append((converted_scaled_img, speed))
 
         self.BACKGROUND_IMAGES_AND_SPEEDS = converted_bg_img_and_speed
 
+    def convert_and_scale_ground_image(self):
+        converted_original_img = self.GROUND_IMAGE_AND_SPEED[0].convert_alpha()
+        target_height = self.GROUND_HEIGHT
+
+        original_width = converted_original_img.get_width()
+        original_height = converted_original_img.get_height()
+
+        scale_factor = target_height / original_height
+        draw_height = target_height
+        draw_width = int(original_width * scale_factor)
+
+        speed = self.GROUND_IMAGE_AND_SPEED[1]
+
+        self.GROUND_IMAGE_AND_SPEED = ((pygame.transform.scale(converted_original_img, (draw_width, draw_height))), speed)
+
+    def convert_and_scale_spear_image(self):
+        converted_original_img = self.SPEAR_IMAGE.convert_alpha()
+
+        target_width = self.SPEAR_WIDTH
+        original_width = converted_original_img.get_width()
+        original_height = converted_original_img.get_height()
+        scale_factor = target_width / original_width
+
+        draw_width = target_width
+        draw_height = int(original_height * scale_factor)
+
+        self.SPEAR_IMAGE = pygame.transform.scale(converted_original_img, (draw_width, draw_height))
+
     def create_window(self):
-        """Create a resizable window using the current settings dimensions."""
-        os.environ["SDL_VIDEO_CENTERED"] = "1"
+        '''Create a resizable window using the current settings dimensions.'''
+        os.environ['SDL_VIDEO_CENTERED'] = '1'
         try:
             screen = pygame.display.set_mode(
                 self.WINDOW_DIMENSIONS,
@@ -228,9 +257,11 @@ class Settings:
         return screen
     
     def convert_and_scale_surfaces(self, screen):
-        """Convert all loaded surfaces after a display mode is set (required for convert_alpha)."""
+        '''Convert all loaded surfaces after a display mode is set (required for convert_alpha).'''
         self.convert_and_scale_player_images()
         self.convert_background_images()
+        self.convert_and_scale_spear_image()
+        self.convert_and_scale_ground_image()
         # Menu related images.
         converted_main_menu = self.MAIN_MENU_IMAGE.convert_alpha()
         self.MAIN_MENU_IMAGE = pygame.transform.scale(converted_main_menu, self.WINDOW_DIMENSIONS)
@@ -260,31 +291,34 @@ class Settings:
         self.DRAGON_IMAGE = self.DRAGON_IMAGE.convert_alpha()
         self.FIREBALL_IMAGE = self.FIREBALL_IMAGE.convert_alpha()
         # Player related images.
-        self.SPEAR_IMAGE = self.SPEAR_IMAGE.convert_alpha()
         self.RED_HEART_IMAGE = self.RED_HEART_IMAGE.convert_alpha()
         self.BLUE_HEART_IMAGE = self.BLUE_HEART_IMAGE.convert_alpha()
-        self.SHIELD_EFFECT_IMAGE = self.SHIELD_EFFECT_IMAGE.convert_alpha()
-        self.SHIELD_PICKUP_IMAGE = self.SHIELD_PICKUP_IMAGE.convert_alpha()
+
+        converted_shield_effect_img = self.SHIELD_EFFECT_IMAGE.convert_alpha()
+        self.SHIELD_EFFECT_IMAGE = pygame.transform.scale(converted_shield_effect_img, (self.PLAYER_HEIGHT + 10, self.PLAYER_HEIGHT + 10))
+
+        converted_shield_pickup_image = self.SHIELD_PICKUP_IMAGE.convert_alpha()
+        self.SHIELD_PICKUP_IMAGE = pygame.transform.scale(converted_shield_pickup_image, (self.SHIELD_PICKUP_SIZE, self.SHIELD_PICKUP_SIZE))
+
         # Scenery related images.
         self.PLATFORM_IMAGE = self.PLATFORM_IMAGE.convert_alpha()
-        self.GROUND_IMAGE = self.GROUND_IMAGE.convert_alpha()
         
     def draw_score(self, surface, font, score, x=10, y=0, color=(0, 0, 122)):
-        """Render the score text to the given surface."""
-        text_surface = font.render(f"Score: {score}", True, color)
+        '''Render the score text to the given surface.'''
+        text_surface = font.render(f'Score: {score}', True, color)
         text_rect = text_surface.get_rect(topleft=(x, y))
         surface.blit(text_surface, text_rect)
 
     def draw_kill_counter(self, surface, font, kill_counter, x=10, y=30, color =(0,0,122)):
-        text_surface = font.render(f"Kill: {kill_counter}", True, color)
+        text_surface = font.render(f'Kill: {kill_counter}', True, color)
         text_rect = text_surface.get_rect(topleft=(x, y))
         surface.blit(text_surface, text_rect)
 
     def draw_lives(self, surface, player):
-        """Draw the player's remaining lives as hearts on the top-right of the screen."""
-        if not hasattr(player, "lives"):
+        '''Draw the player's remaining lives as hearts on the top-right of the screen.'''
+        if not hasattr(player, 'lives'):
             return
-        heart_image = self.BLUE_HEART_IMAGE if getattr(player, "has_shield", False) else self.RED_HEART_IMAGE
+        heart_image = self.BLUE_HEART_IMAGE if getattr(player, 'has_shield', False) else self.RED_HEART_IMAGE
         for i in range(player.lives):
             left = (
                 self.WINDOW_WIDTH
@@ -295,14 +329,7 @@ class Settings:
             surface.blit(heart_image, (left, self.PLAYER_LIVES_MARGIN_Y))
 
     def initialize_static_layers(self, screen):
-        """Build and draw static layers once at startup."""
-        self.background_group, self.ground_group = self.build_static_layers()
-        self.background_group.draw(screen)
-        self.ground_group.draw(screen)
-        return self.background_group, self.ground_group
-
-    def build_static_layers(self):
-        """Create background and ground sprite groups sized to the current window."""
+        '''Build and draw static layers once at startup.'''
         from entity import Background, Ground  # Local import to avoid circular dependency on load.
 
         background_group = pygame.sprite.Group()
@@ -312,7 +339,13 @@ class Settings:
             background_group.add(Background(image, scrolling_speed, self.WINDOW_WIDTH, 0))
 
         ground_group = pygame.sprite.Group()  # Ground collision surface.
-        ground_group.add(Ground())
+        for ground_number in range(0,5):
+            ground_group.add(Ground(ground_number))
+
+        background_group.draw(screen)
+        for ground in ground_group:
+            screen.blit(ground.image, ground.full_image_rect)
+        
         return background_group, ground_group
 
 settings = Settings()

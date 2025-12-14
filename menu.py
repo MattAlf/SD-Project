@@ -20,7 +20,7 @@ def build_help_button(font):
         HELP_BUTTON_SIZE
     )
     return Button(
-        text = "",
+        text = '',
         rect = rect,
         font = font,
         icon = settings.HELP_ICON
@@ -34,7 +34,7 @@ def build_fullscreen_button(font):
         FULLSCREEN_BUTTON_SIZE
     )
     return Button(
-        text = "",
+        text = '',
         rect = rect,
         font = font,
         icon = settings.FULLSCREEN_ICON
@@ -262,14 +262,14 @@ class OptionsMenu:
             self.music_volume = self.music_slider.value
             pygame.mixer.music.set_volume(self.music_volume)
             settings.music_volume = self.music_volume
-            self.music_panel[0].text = f"Music: {int(self.music_volume * 100)}%"
+            self.music_panel[0].text = f'Music: {int(self.music_volume * 100)}%'
             return None
 
         # --- Handle SFX slider ---
         if self.sound_effects_slider.handle_event(event):
             self.sound_effects_volume = self.sound_effects_slider.value
             settings.sound_effects_volume = self.sound_effects_volume
-            self.sound_effects_panel[0].text = f"Sounds: {int(self.sound_effects_volume * 100)}%"
+            self.sound_effects_panel[0].text = f'Sounds: {int(self.sound_effects_volume * 100)}%'
             # Apply new volume to all SFX
             for sound in settings.ALL_SOUND_EFFECTS.values():
                 sound.set_volume(self.sound_effects_volume)
@@ -277,7 +277,7 @@ class OptionsMenu:
 
         # Escape → back
         if event.type == KEYDOWN and event.key == K_ESCAPE:
-            return "BACK"
+            return 'BACK'
 
         # Help button
         if self.help_button.is_clicked(event):
@@ -290,7 +290,7 @@ class OptionsMenu:
         for i, button in enumerate(self.buttons):
             if button.is_clicked(event):
                 if i == 0:
-                    return "BACK"
+                    return 'BACK'
         return None
 
     def create_buttons(self):
@@ -307,14 +307,14 @@ class OptionsMenu:
         self.sound_effects_slider = VolumeSlider(settings.WINDOW_WIDTH // 2, settings.WINDOW_HEIGHT // 2)
         self.sound_effects_slider.set_value(self.sound_effects_volume)# Sync slider knob to current volume.
 
-        self.sound_effects_panel = build_buttons([f"Sounds: {int(self.sound_effects_volume * 100)}%"], self.font)
+        self.sound_effects_panel = build_buttons([f'Sounds: {int(self.sound_effects_volume * 100)}%'], self.font)
         self.sound_effects_panel[0].rect.bottom = self.sound_effects_slider.rect.top - PANEL_SPACING
         
         # Music slider at upper-middle
         self.music_slider = VolumeSlider(settings.WINDOW_WIDTH // 2, (settings.WINDOW_HEIGHT // 2) - 90)
         self.music_slider.set_value(self.music_volume)# Sync slider knob to current volume.
 
-        self.music_panel = build_buttons([f"Music: {int(self.music_volume * 100)}%"], self.font)
+        self.music_panel = build_buttons([f'Music: {int(self.music_volume * 100)}%'], self.font)
         self.music_panel[0].rect.bottom = self.music_slider.rect.top - PANEL_SPACING
 
 class PauseMenu:
@@ -339,7 +339,7 @@ class PauseMenu:
 
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
-            return "RESUME"
+            return 'RESUME'
         
         if self.help_button.is_clicked(event):
             return 'HELP'
@@ -350,11 +350,11 @@ class PauseMenu:
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
                 if i == 0:
-                    return "RESUME"
+                    return 'RESUME'
                 elif i == 1:
-                    return "MAIN_MENU"
+                    return 'MAIN_MENU'
                 elif i == 2:
-                    return "EXIT"
+                    return 'EXIT'
         return None
 
 class GameOverMenu:
@@ -391,7 +391,7 @@ class GameOverMenu:
 
     def handle_event(self, event):
         if event.type == KEYDOWN and event.key == K_ESCAPE:
-            return "MAIN_MENU"
+            return 'MAIN_MENU'
         
         if self.help_button.is_clicked(event):
             return 'HELP'
@@ -402,23 +402,23 @@ class GameOverMenu:
         for i, b in enumerate(self.buttons):
             if b.is_clicked(event):
                 if i == 0:
-                    return "RETRY"
+                    return 'RETRY'
                 if i == 1:
-                    return "MAIN_MENU"
+                    return 'MAIN_MENU'
                 if i == 2:
-                    return "EXIT"
+                    return 'EXIT'
         return None
 
 def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock):
-    """Main menu loop; exits when the user starts the game or quits."""
+    '''Main menu loop; exits when the user starts the game or quits.'''
     pygame.mixer.music.stop()
-    current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
+    current_menu = 'MAIN'  # Tracks whether we are in the main or options menu.
     while True:
         for event in pygame.event.get():  # Poll menu events.
             if event.type == QUIT:
                 terminate()
 
-            if current_menu == "MAIN":
+            if current_menu == 'MAIN':
                 result = main_menu.handle_event(event)
                 if result == 'START_GAME':
                     return
@@ -440,7 +440,7 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock)
                 elif result == 'TOGGLE_FULLSCREEN':
                     toggle_fullscreen(screen)
                 elif result == 'BACK':
-                    current_menu = "MAIN"
+                    current_menu = 'MAIN'
             
             elif current_menu == 'HELP':
                 result = help_menu.handle_event(event)
@@ -456,7 +456,7 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock)
                 elif result == 'TOGGLE_FULLSCREEN':
                     toggle_fullscreen(screen)
                     
-        if current_menu == "MAIN":
+        if current_menu == 'MAIN':
             main_menu.draw(screen)
         elif current_menu == 'HELP':
             help_menu.draw(screen)
@@ -469,7 +469,7 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock)
         clock.tick(settings.FPS)
 
 def toggle_fullscreen(screen):
-    """Toggle fullscreen/windowed modes and refresh layout-dependent assets."""
+    '''Toggle fullscreen/windowed modes and refresh layout-dependent assets.'''
 
     if settings.is_fullscreen:
         # Switch to windowed

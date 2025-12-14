@@ -4,19 +4,6 @@ from settings import settings, terminate
 import random
 
 
-class Entity(pygame.sprite.Sprite):
-    def __init__(self, image, image_width, image_height):
-        super().__init__()
-        scaled = pygame.transform.scale(image, (image_width, image_height))
-        # Convert scaled surfaces for faster blitting.
-        try:
-            scaled = scaled.convert_alpha()
-        except pygame.error:
-            scaled = scaled.convert()
-        self.image = scaled
-        self.rect = self.image.get_rect()
-
-
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -42,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         # Here the rectangle that represents the hitbox is drawn.
         self.rect = pygame.Rect(0, 0, hitbox_width, hitbox_height)
         # The rectangle (hitbox) is repositioned to the left of the screen. (player's starting position)
-        self.rect.bottomleft = (10, settings.WINDOW_HEIGHT - settings.GROUND_HEIGHT)
+        self.rect.bottomleft = (0, settings.WINDOW_HEIGHT - settings.GROUND_HEIGHT)
         # This is the rectangle associated with the full image. So it has also the empty spaces around it.
         self.full_image_rect = self.image.get_rect()
         # Here we reposition the image to place the knight inside of the hitbox.
@@ -80,33 +67,21 @@ class Player(pygame.sprite.Sprite):
         self.on_platform = False
         self.attack_right = False
         self.attack_left = False
+        self.drop_through = False
 
-    def handle_input(self, events, ground_group, platform_group, spear_group):
-        for event in events:
-            if event.type == QUIT:
-                terminate()
-            if event.type == KEYDOWN:
-                if event.key in (K_SPACE, K_UP, K_w) and (self.on_ground or self.on_platform):
-                    self.jump(ground_group, platform_group)
-                if event.key in (K_DOWN, K_s) and (not self.attack_left and not self.attack_right):
-                    self.attack(spear_group)
-
-        keys = pygame.key.get_pressed()
-        self.run_left = keys[K_LEFT] or keys[K_a]
-        self.run_right = keys[K_RIGHT] or keys[K_d]
-        if self.run_left and self.run_right:
-            self.run_left = self.run_right = False
-
-    def update(self, events, ground_group, platform_group, spear_group, ghost_group, shield_pickup_group, shield_effect_group):
-        self.current_time = pygame.time.get_ticks()
-        self.handle_input(events, ground_group, platform_group, spear_group)
+    def update(self, current_time, ground_group, platform_group, ghost_group, shield_pickup_group, shield_effect_group):
+        self.current_time = current_time
         self.acceleration = pygame.math.Vector2(0, self.VERTICAL_ACCELERATION)
-        if self.run_left or self.run_right:
-            self.acceleration.x = self.HORIZONTAL_ACCELERATION if self.run_right else -self.HORIZONTAL_ACCELERATION
+        if self.run_right:
+            self.acceleration.x = self.HORIZONTAL_ACCELERATION
+        elif self.run_left:
+            self.acceleration.x = -self.HORIZONTAL_ACCELERATION
 
         if self.attack_right or self.attack_left:
-            images = self.player_images['PLAYER_ATTACK_RIGHT'] if self.attack_right else self.player_images['PLAYER_ATTACK_LEFT']
-            self.animate(images, settings.PLAYER_ANIMATION_SLOWER)
+            if self.attack_right:
+                self.animate(self.player_images['PLAYER_ATTACK_RIGHT'], settings.PLAYER_ANIMATION_SLOWER)
+            else:
+                self.animate(self.player_images['PLAYER_ATTACK_LEFT'], settings.PLAYER_ANIMATION_SLOWER)
         elif self.in_a_jump:
             if self.velocity.x > 0:
                 self.animate(self.player_images['PLAYER_JUMP_RIGHT'], settings.PLAYER_ANIMATION_SLOWER)
@@ -123,7 +98,8 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.animate(self.player_images['PLAYER_IDLE_LEFT'], settings.PLAYER_ANIMATION_SLOWER)
 
-        self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
+        if not self.drop_through:
+            self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
         self.velocity += self.acceleration
         self.position += self.velocity + 0.5 * self.acceleration
 
@@ -153,10 +129,11 @@ class Player(pygame.sprite.Sprite):
 
     def check_platform_collisions(self, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
-        if touched_platforms and self.velocity.y > 0 and self.rect.bottom < touched_platforms[0].rect.bottom:
+        if touched_platforms and not self.drop_through and self.velocity.y > 0 and self.rect.bottom < touched_platforms[0].rect.bottom:
             self.position.y = touched_platforms[0].rect.top
             self.position.x -= settings.PLATFORM_SPEED
             self.velocity.y = 0
+            self.drop_through = False
             self.on_platform = True
             self.in_a_jump = False
         else:
@@ -167,6 +144,7 @@ class Player(pygame.sprite.Sprite):
         if touched_ground:
             self.position.y = touched_ground[0].rect.top
             self.velocity.y = 0
+            self.drop_through = False
             self.on_ground = True
             self.in_a_jump = False
         else:
@@ -190,9 +168,8 @@ class Player(pygame.sprite.Sprite):
             self.in_a_jump = True
 
     def attack(self, spear_group):
-        current_time = getattr(self, "current_time", pygame.time.get_ticks())
-        if current_time - self.last_attack_time > self.attack_cooldown:
-            self.last_attack_time = current_time
+        if self.current_time - self.last_attack_time > self.attack_cooldown:
+            self.last_attack_time = self.current_time
             if self.velocity.x > 0:
                 current_direction = 1
                 self.attack_right = True
@@ -201,7 +178,7 @@ class Player(pygame.sprite.Sprite):
                 self.attack_left = True
             start_x = self.rect.centerx
             start_y = self.rect.centery
-            new_spear = Bullet(start_x, start_y, current_direction, settings.SPEAR_IMAGE)
+            new_spear = Spear(start_x, start_y, current_direction)
             spear_group.add(new_spear)
 
     def animate(self, list_of_images, animation_speed):
@@ -220,12 +197,28 @@ class Player(pygame.sprite.Sprite):
         if collected_shield_object and not self.has_shield:
             self.has_shield = True
             self.shield_timer = self.current_time + settings.SHIELD_DURATION_TIME
-            shield_effect_group.add(ShieldEffect(self, settings.SHIELD_EFFECT_IMAGE))
+            shield_effect_group.add(ShieldEffect(self))
 
-    def check_for_enemy_collision(self, ghost_group):
-        touched_enemy = pygame.sprite.spritecollide(self, ghost_group, True)
-        if touched_enemy:
+    def check_for_enemy_collision(self, ghost_group, fireball_group, dragon_group):
+        touched_ghost = pygame.sprite.spritecollide(self, ghost_group, True)
+        touched_fireball = pygame.sprite.spritecollide(self, fireball_group, True)
+        touched_dragon = pygame.sprite.spritecollide(self, dragon_group, False)
+        if touched_ghost or touched_fireball:
             self.take_damage()
+        if touched_dragon:
+            self.take_damage()
+            if self.velocity.x > 0 and self.velocity.y > 0:
+                self.position.x -= 20
+                self.position.y -= 20
+            if self.velocity.x > 0 and self.velocity.y < 0:
+                self.position.x -= 20
+                self.position.y += 20
+            if self.velocity.x < 0 and self.velocity.y > 0:
+                self.position.x += 20
+                self.position.y -= 20
+            if self.velocity.x < 0 and self.velocity.y < 0:
+                self.position.x += 20
+                self.position.y += 20
 
     def take_damage(self):
         if self.has_shield:
@@ -240,19 +233,12 @@ class Player(pygame.sprite.Sprite):
                 self.dead = True
 
 
-class Bullet(pygame.sprite.Sprite):
+class Spear(pygame.sprite.Sprite):
     kill_count = 0  # Add this class attribute
     
-    def __init__(self, position_x, position_y, direction, spear_image):
+    def __init__(self, position_x, position_y, direction):
         super().__init__()
-        original_image = spear_image
-        target_width = settings.SPEAR_WIDTH
-        original_width = original_image.get_width()
-        original_height = original_image.get_height()
-        scale_factor = target_width / original_width
-        self.draw_width = target_width
-        self.draw_height = int(original_height * scale_factor)
-        self.image = pygame.transform.scale(original_image, (self.draw_width, self.draw_height))
+        self.image = settings.SPEAR_IMAGE
         if direction == -1:
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
@@ -266,16 +252,12 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(self, ghost_group, True):
             self.kill()
-            Bullet.kill_count += 1             
-
+            Spear.kill_count += 1
 
 class ShieldPickup(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.transform.scale(
-            settings.SHIELD_PICKUP_IMAGE,
-            (settings.SHIELD_PICKUP_SIZE, settings.SHIELD_PICKUP_SIZE)
-        )
+        self.image = settings.SHIELD_PICKUP_IMAGE
         self.rect = self.image.get_rect()
         self.rect.left = settings.WINDOW_WIDTH
         self.rect.bottom = random.randint(settings.SHIELD_PICKUP_SIZE, settings.WINDOW_HEIGHT - settings.GROUND_HEIGHT)
@@ -286,12 +268,10 @@ class ShieldPickup(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
-
 class ShieldEffect(pygame.sprite.Sprite):
-    def __init__(self, player, shield_image):
+    def __init__(self, player):
         super().__init__()
-        size = player.rect.height + 10
-        self.image = pygame.transform.scale(shield_image, (size, size))
+        self.image = settings.SHIELD_EFFECT_IMAGE
         self.rect = self.image.get_rect()
         self.player = player
 
@@ -381,13 +361,15 @@ class Fireball(pygame.sprite.Sprite):
             self.rect.bottom < 0 or self.rect.top > settings.WINDOW_HEIGHT):
             self.kill()
 
-class Ghosts(Entity):
+class Ghosts(pygame.sprite.Sprite):
     def __init__(self):
-        image = settings.GHOST_IMAGE
+        super().__init__()
+        original_image = settings.GHOST_IMAGE
         self.size = random.randint(settings.GHOST_MIN_SIZE, settings.GHOST_MAX_SIZE)
-        super().__init__(image, self.size* 2, self.size)
+        self.image = pygame.transform.scale(original_image, (self.size, self.size))
+        self.rect = self.image.get_rect()
         self.rect.left = settings.WINDOW_WIDTH
-        self.rect.bottom = random.randint(0, settings.WINDOW_HEIGHT - self.size)
+        self.rect.bottom = random.randint(0, settings.WINDOW_HEIGHT - (settings.GROUND_HEIGHT + self.size))
         self.speed = random.randint(settings.GHOST_MIN_SPEED, settings.GHOST_MAX_SPEED)
 
     def update(self):
@@ -395,37 +377,51 @@ class Ghosts(Entity):
         if self.rect.right < 0:
             self.kill()
 
-
-class Platform(Entity):
+class Platform(pygame.sprite.Sprite):
     def __init__(self):
-        image = settings.PLATFORM_IMAGE
+        super().__init__()
+        original_image = settings.PLATFORM_IMAGE
         self.height = settings.PLATFORM_HEIGHT
         self.width = random.randint(settings.PLATFORM_WIDTH // 2, settings.PLATFORM_WIDTH)
-        super().__init__(image, self.width, self.height)
+        self.image = pygame.transform.scale(original_image, (self.width, self.height))
+        self.rect = self.image.get_rect()
         self.rect.left = random.randint(settings.WINDOW_WIDTH, settings.WINDOW_WIDTH + self.width)
         self.rect.top = random.randint(300, settings.WINDOW_HEIGHT - self.height*3)
         
-
     def update(self):
         self.rect.x -= settings.PLATFORM_SPEED
         if self.rect.right < 0:
             self.kill()
 
+class Ground(pygame.sprite.Sprite):
+    def __init__(self, ground_number):
+        super().__init__()
+        self.image, self.speed = settings.GROUND_IMAGE_AND_SPEED
 
-class Ground(Entity):
-    def __init__(self):
-        image = settings.GROUND_IMAGE
-        self.width = settings.WINDOW_WIDTH
-        self.height = settings.GROUND_HEIGHT
-        super().__init__(image, self.width, self.height)
-        self.rect.bottomleft = (0, settings.WINDOW_HEIGHT)
+        self.draw_width = self.image.get_width()
+        self.draw_height = self.image.get_height()
 
+        hitbox_width = self.draw_width
+        hitbox_height = int(self.draw_height * settings.GROUND_HITBOX_IMAGE_HEIGHT_FACTOR)
+     
+        self.rect = pygame.Rect(0, 0, hitbox_width, hitbox_height)
+        self.rect.bottomleft = (ground_number * self.draw_width, settings.WINDOW_HEIGHT)
 
-class Background(Entity):
+        self.full_image_rect = self.image.get_rect()
+        self.full_image_rect.bottomleft = self.rect.bottomleft
+
+    def update(self):
+        self.rect.x -= self.speed
+        self.full_image_rect.x -= self.speed
+        if self.rect.right <= 0 and self.full_image_rect.right <= 0:
+            self.rect.left += 5 * self.draw_width
+            self.full_image_rect.left += 5 * self.draw_width
+            
+class Background(pygame.sprite.Sprite):
     def __init__(self, image, scrolling_speed, x, y):
-        self.width = settings.WINDOW_WIDTH
-        self.height = settings.WINDOW_HEIGHT
-        super().__init__(image, self.width, self.height)
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
         self.speed = scrolling_speed
         self.rect.topleft = (x, y)
 
