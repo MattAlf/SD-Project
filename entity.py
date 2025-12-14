@@ -7,7 +7,7 @@ import random
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        # The current image index will be useful to iterate through the animations.
+        # The current image index will be useful to iterate through the animations
         self.current_image_index = 0
         self.player_images = settings.PLAYER_IMAGES
 
@@ -20,11 +20,11 @@ class Player(pygame.sprite.Sprite):
         hitbox_width = int(self.draw_width * settings.PLAYER_HITBOX_IMAGE_WIDTH_FACTOR)
         hitbox_height = int(self.draw_height * settings.PLAYER_HITBOX_IMAGE_HEIGHT_FACTOR)
         
-        # Calculate offset to center the hitbox on the visual sprite.
+        # Calculate offset to center the hitbox on the visual sprite
         self.HITBOX_X_OFFSET = int(self.draw_width * settings.PLAYER_HITBOX_X_OFFSET_FACTOR)
         self.HITBOX_Y_OFFSET = int(self.draw_height * settings.PLAYER_HITBOX_Y_OFFSET_FACTOR)
         
-        # Create the hitbox rectangle and set starting position.
+        # Create the hitbox rectangle and set starting position
         self.rect = pygame.Rect(0, 0, hitbox_width, hitbox_height)
         self.rect.bottomleft = (0, settings.WINDOW_HEIGHT - settings.GROUND_HEIGHT)
         
@@ -32,7 +32,7 @@ class Player(pygame.sprite.Sprite):
         self.full_image_rect = self.image.get_rect()
         self.full_image_rect.bottomleft = (self.rect.left - self.HITBOX_X_OFFSET, self.rect.bottom + self.HITBOX_Y_OFFSET)
 
-        # Kinematic vectors (x,y).
+        # Kinematic vectors (x,y)
         self.position = pygame.math.Vector2(self.rect.left, self.rect.bottom)
         self.velocity = pygame.math.Vector2(0, 0)
         self.acceleration = pygame.math.Vector2(0, 0)
@@ -43,16 +43,16 @@ class Player(pygame.sprite.Sprite):
         self.VERTICAL_ACCELERATION = settings.VERTICAL_ACCELERATION
         self.PLAYER_JUMP_STRENGTH = settings.PLAYER_JUMP_STRENGTH
         
-        # Attack cooldown timers.
+        # Attack cooldown timers
         self.attack_cooldown = settings.SPEAR_ATTACK_COOLDOWN
         self.last_attack_time = 0
 
-        # Lives and Shield status.
+        # Lives and Shield status
         self.lives = settings.PLAYER_STARTING_LIVES
         self.invulnerability_timer = 0
         self.shield_timer = 0
         
-        # State flags.
+        # State flags
         self.has_shield = False
         self.is_invulnerable = False
         self.dead = False
@@ -77,7 +77,7 @@ class Player(pygame.sprite.Sprite):
         elif self.run_left:
             self.acceleration.x = -self.HORIZONTAL_ACCELERATION
 
-        # Handle Animation state selection.
+        # Handle Animation state selection
         if self.attack_right or self.attack_left:
             if self.attack_right:
                 self.animate(self.player_images['PLAYER_ATTACK_RIGHT'])
@@ -104,7 +104,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity += self.acceleration
         self.position += self.velocity + 0.5 * self.acceleration
 
-        # Update position and sync image to hitbox.
+        # Update position and sync image to hitbox
         self.check_for_screen_border_collision()
         self.rect.bottomleft = self.position
         self.full_image_rect.bottomleft = (self.rect.left - self.HITBOX_X_OFFSET, self.rect.bottom + self.HITBOX_Y_OFFSET)
@@ -117,13 +117,13 @@ class Player(pygame.sprite.Sprite):
         if self.has_shield and self.current_time > self.shield_timer:
             self.has_shield = False
 
-        # Handle invulnerability flashing effect.
+        # Handle invulnerability flashing effect
         if self.is_invulnerable:
             if self.current_time > self.invulnerability_timer:
                 self.is_invulnerable = False
                 self.image.set_alpha(255)
             else:
-                # Flash sprite transparency.
+                # Flash sprite transparency
                 self.image.set_alpha(0 if self.current_time // 100 % 2 == 0 else 255)
         else:
             self.image.set_alpha(255)
@@ -178,7 +178,7 @@ class Player(pygame.sprite.Sprite):
     def attack(self, spear_group):
         if self.current_time - self.last_attack_time > self.attack_cooldown:
             self.last_attack_time = self.current_time
-            # Determine direction based on velocity.
+            # Determine direction based on velocity
             if self.velocity.x > 0:
                 current_direction = 1
                 self.attack_right = True
@@ -186,7 +186,7 @@ class Player(pygame.sprite.Sprite):
                 current_direction = -1
                 self.attack_left = True
             
-            # Spawn spear.
+            # Spawn spear
             start_x = self.rect.centerx
             start_y = self.rect.centery
             settings.ALL_SOUND_EFFECTS['SPEAR_THROW'].play()
