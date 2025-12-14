@@ -319,16 +319,16 @@ class Dragon(pygame.sprite.Sprite):
         if current_time - self.last_attack_time > self.attack_cooldown:
             self.last_attack_time = current_time
             
-            # Calculer la direction vers le joueur
+            # Calcul player position's
             dx = self.player.rect.centerx - self.rect.centerx
             dy = self.player.rect.centery - self.rect.centery
             
-            # Créer une boule de feu
+            # Creat fireball
             settings.ALL_SOUND_EFFECTS['DRAGON_ATTACK'].play()
-            fireball = Fireball(self.rect.centerx, self.rect.centery, dx, dy, settings.FIREBALL_IMAGE, score)
+            fireball = Fireball(self.rect.centerx, self.rect.centery, dx - 20, dy, settings.FIREBALL_IMAGE, score)
             fireball_group.add(fireball)
         
-        # Vérifier les collisions avec les spears
+        # Verify spear collision's 
         hit_spears = pygame.sprite.spritecollide(self, spear_group, True)
         if hit_spears:
             settings.ALL_SOUND_EFFECTS['KILL'].play()
@@ -340,7 +340,6 @@ class Dragon(pygame.sprite.Sprite):
 class Fireball(pygame.sprite.Sprite):
     def __init__(self, position_x, position_y, direction_x, direction_y, fireball_image, score):
         super().__init__()
-        # Redimensionner l'image
         self.image = settings.FIREBALL_IMAGE
         self.rect = self.image.get_rect()
         self.rect.center = (position_x, position_y)

@@ -1,5 +1,5 @@
 # game_loop.py
-# Encapsulates the gameplay loop so main.py stays focused on wiring menus and state transitions.
+# Handles the actual gameplay logic, keeping it separate from the main menu system.
 import random
 import pygame
 from pygame.locals import *
@@ -8,11 +8,13 @@ from settings import settings, terminate
 
 
 def run_game_round(screen, pause_menu, game_over_menu, font):
-    '''Run a single game round; returns a next action when the player pauses or dies.'''
+    '''Runs a single round of the game. Returns the next step (Retry/Menu) when finished.'''
+    
+    # Load music and setup the static background elements.
     pygame.mixer.music.load(settings.assets_dir / 'musics/in_game_music.wav')
-    background_group, ground_group = settings.initialize_static_layers(screen)  # Static scenery.
+    background_group, ground_group = settings.initialize_static_layers(screen)
 
-    # Core game state setup.
+    # Initialize sprites and groups.
     player = Player()
     player_group = pygame.sprite.GroupSingle(player)
     spear_group = pygame.sprite.Group()
@@ -25,6 +27,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
     shield_pickup_group = pygame.sprite.Group()
     shield_effect_group = pygame.sprite.Group()
 
+    # Reset score and counters for this round.
     score = 0
     kill_counter = 0
     Spear.kill_count = 0
@@ -39,6 +42,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
     )
     paused = False
 
+    # Simple helpers to toggle state.
     def pause_game():
         nonlocal paused
         paused = True
@@ -50,21 +54,33 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
         paused = False
         pygame.mixer.music.unpause()
 
-    pygame.mixer.music.play(-1, 0.0)  # Loop background music for this round.
-    clock = pygame.time.Clock()                
+    pygame.mixer.music.play(-1, 0.0)
+    clock = pygame.time.Clock() 
+                   
     while True:
-        events = pygame.event.get()  # Capture all events for this frame.
-        for event in events:
+        raw_events = pygame.event.get()
+        
+        # We separate global inputs (like Pause/Quit) from gameplay inputs.
+        # This prevents the "double press" bug where closing the menu instantly re-opens it.
+        events_to_process = []
+        
+        for event in raw_events:
             if event.type == QUIT:
                 terminate()
-            if event.type == KEYDOWN and event.key == K_ESCAPE:
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                # Toggle pause state here.
                 if paused:
                     resume_game()
                 else:
                     pause_game()
+                # Don't pass the Escape key to the rest of the logic.
+            else:
+                events_to_process.append(event)
+
+        # If paused, only handle menu interaction and skip the game logic.
         if paused:
-            for event in events:
-                result = pause_menu.handle_event(event)  # Handle pause menu buttons.
+            for event in events_to_process:
+                result = pause_menu.handle_event(event)
                 if result == 'RESUME':
                     resume_game()
                 elif result == 'MAIN_MENU':
@@ -75,46 +91,53 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
             pygame.display.update()
             clock.tick(settings.FPS)
             continue
-        for event in events:
+            
+        # Handle active player inputs (Jumping, Attacking, Dropping down).
+        for event in events_to_process:
             if event.type == KEYDOWN:
                 if event.key in (K_UP, K_w) and (player.on_ground or player.on_platform):
                     player.jump(ground_group, platform_group)
                     settings.ALL_SOUND_EFFECTS['PLAYER_JUMP'].play()
+                
                 if event.key in (K_SPACE, K_RETURN, K_KP_ENTER) and (not player.attack_left and not player.attack_right):
                     player.attack(spear_group)
-                if event.key == K_DOWN:
+
+                if event.key in (K_DOWN, K_s):
                     player.drop_through = True
-            if event.type == KEYUP and event.key == K_DOWN:
+            
+            if event.type == KEYUP and event.key in (K_DOWN, K_s):
                 player.drop_through = False
                 
-        # Here we look at the state of the all the keys at each frame. It is useful because
-        # running left or right are continuous movements.
+        # Check continuous inputs for movement (holding Left/Right).
         keys = pygame.key.get_pressed()
         player.run_left = keys[K_LEFT] or keys[K_a]
         player.run_right = keys[K_RIGHT] or keys[K_d]
+        
+        # Prevent moonwalking if both keys are pressed.
         if player.run_left and player.run_right:
             player.run_left = player.run_right = False
 
-        score += 1  # Increment score every frame as a simple timer.
+        score += 1 
         current_time = pygame.time.get_ticks()
 
-        # Spawn dragon when score reaches 2000
-        if score % 2000 == 0 and not dragon_alive:
+        # Boss logic: Spawn the dragon every 1000 points.
+        if score % 1000 == 0 and not dragon_alive:
             dragon_group.add(Dragon(player))
             dragon_alive = True
 
-        # Add new ghosts (only if dragon hasn't spawned).
+        # Spawn ghosts regularly, but not during the boss fight.
         ghost_add_counter += 1
         if ghost_add_counter >= settings.GHOST_SPAWN_RATE and not dragon_alive:
             ghost_add_counter = 0
             ghost_group.add(Ghosts())
 
-        # Add new platform at a fixed cadence.
+        # Spawn platforms.
         platform_add_counter += 1
         if platform_add_counter >= settings.PLATFROM_SPAWN_RATE:
             platform_add_counter = 0
             platform_group.add(Platform())
 
+        # Spawn shield power-ups.
         if current_time >= next_shield_spawn and not shield_pickup_group:
             shield_pickup_group.add(ShieldPickup())
             next_shield_spawn = current_time + random.randint(
@@ -122,7 +145,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
                 settings.SHIELD_PICKUP_SPAWN_RATE_MAX,
             )
 
-        # Update game objects.
+        # Move everything.
         player_group.update(current_time, ground_group, platform_group)
         platform_group.update()
         ghost_group.update()
@@ -135,14 +158,15 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
         shield_effect_group.update()
         kill_counter = Spear.kill_count
 
+        # Check for physical collisions.
         player.check_for_enemy_collision(ghost_group, fireball_group, dragon_group)
         player.check_for_pickable_objects_collision(shield_pickup_group, shield_effect_group)
                 
-        # Check if dragon is dead and respawn ghosts
+        # If dragon dies, resume normal spawns.
         if dragon_alive and len(dragon_group) == 0:
             dragon_alive = False
 
-        # Draw everything.
+        # Draw the scene.
         background_group.draw(screen)
 
         screen.blit(player.image, player.full_image_rect)
@@ -157,11 +181,13 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
 
         for ground in ground_group:
             screen.blit(ground.image, ground.full_image_rect)
+            
         settings.draw_hud(screen, font, score, kill_counter)
         settings.draw_lives(screen, player)
 
-        pygame.display.update()  # Present frame.
+        pygame.display.update()
 
+        # Handle player death.
         if player.dead:
             settings.ALL_SOUND_EFFECTS['PLAYER_DEATH'].play()
             settings.ALL_SOUND_EFFECTS['GAME_OVER'].play()
@@ -169,9 +195,9 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
             settings.highest_score = max(score, settings.highest_score)
             break
 
-        clock.tick(settings.FPS)  # Control FPS inside game loop.
+        clock.tick(settings.FPS)
 
-    # Show the game over screen with retry/main menu options.
+    # Game Over Phase: Wait for player choice.
     pygame.mixer.music.stop()
     settings.ALL_SOUND_EFFECTS['GAME_OVER'].play()
     game_over_menu.create_buttons()

@@ -15,19 +15,19 @@ class Settings:
     FPS = 60
     # BACKGROUND_SCROLL_SPEED_MULTIPLICATOR. It will speed up the background scrolling speed while keeping the
     # parallax effect in the same proportions. (To avoid bugs don't go below 0.6)
-    BACKGROUND_SCROLL_SPEED_MULTIPLICATOR = 0.7
+    BACKGROUND_SCROLL_SPEED_MULTIPLICATOR = 0.6
 
     # Ghost related values.
     GHOST_MIN_SIZE = 40
     GHOST_MAX_SIZE = 60
     GHOST_MIN_SPEED = 10
     GHOST_MAX_SPEED = 14
-    GHOST_SPAWN_RATE = 50 # It will be a spawn rate based on the FPS. (so 1 ghost every 20 frames)
+    GHOST_SPAWN_RATE = 30 # It will be a spawn rate based on the FPS. (so 1 ghost every 30 frames)
     
     # Platform related values.
     PLATFORM_HEIGHT = 30 # In pixels
     PLATFORM_WIDTH = 250 # In pixels
-    PLATFORM_SPEED =  5 # In pixels
+    PLATFORM_SPEED =  6 # In pixels
     PLATFROM_SPAWN_RATE = 40 # It will be a spawn rate based on the FPS. (so 1 platform every 40 frames)
 
     # Shield related values.
