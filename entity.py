@@ -188,6 +188,7 @@ class Player(pygame.sprite.Sprite):
             self.on_ground = False
             self.on_platform = False
             self.in_a_jump = True
+            settings.JUMP_SOUND.play()
 
     def attack(self, spear_group):
         current_time = getattr(self, "current_time", pygame.time.get_ticks())
@@ -203,6 +204,7 @@ class Player(pygame.sprite.Sprite):
             start_y = self.rect.centery
             new_spear = Bullet(start_x, start_y, current_direction, settings.SPEAR_IMAGE)
             spear_group.add(new_spear)
+            settings.SPEAR_SOUND.play()
 
     def animate(self, list_of_images, animation_speed):
         if self.current_image_index < animation_speed * len(list_of_images) - 1:
@@ -221,6 +223,7 @@ class Player(pygame.sprite.Sprite):
             self.has_shield = True
             self.shield_timer = self.current_time + settings.SHIELD_DURATION_TIME
             shield_effect_group.add(ShieldEffect(self, settings.SHIELD_EFFECT_IMAGE))
+            settings.SHIELD_PICKUP_SOUND.play()
 
     def check_for_enemy_collision(self, baddie_group):
         touched_enemy = pygame.sprite.spritecollide(self, baddie_group, True)
@@ -229,14 +232,17 @@ class Player(pygame.sprite.Sprite):
 
     def take_damage(self):
         if self.has_shield:
+            settings.SHIELD_BREAK_SOUND.play()
             self.has_shield = False
             return
         if not self.is_invulnerable:
             self.lives -= 1
+            settings.HIT_SOUND.play()
             if self.lives > 0:
                 self.is_invulnerable = True
                 self.invulnerability_timer = self.current_time + settings.PLAYER_INVULNERABILITY_TIME
             else:
+                settings.DEATH_SOUND.play()
                 self.dead = True
 
 
@@ -267,6 +273,7 @@ class Bullet(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, baddie_group, True):
             self.kill()
             Bullet.kill_count += 1             
+            settings.KILL_SOUND.play()
 
 
 class ShieldPickup(pygame.sprite.Sprite):
@@ -346,6 +353,7 @@ class Dragon(pygame.sprite.Sprite):
             # Créer une boule de feu
             fireball = Fireball(self.rect.centerx, self.rect.centery, dx, dy, settings.FIREBALL_IMAGE, score)
             fireball_group.add(fireball)
+            settings.DRAGON_ATTACK_SOUND.play()
         
         # Vérifier les collisions avec les spears
         hit_spears = pygame.sprite.spritecollide(self, spear_group, True)

@@ -56,7 +56,28 @@ class Settings:
         self.sound_effects_volume = 0.5
 
         self.GAME_OVER_SOUND = pygame.mixer.Sound(assets_dir / "gameover.wav")
-        self.ALL_SOUND_EFFECTS = [self.GAME_OVER_SOUND]  # filled later with your sounds
+        self.BUTTON_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Button.wav")
+        self.JUMP_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Jump.wav")
+        self.SPEAR_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Spear.wav")
+        self.SHIELD_PICKUP_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Shield.wav")
+        self.SHIELD_BREAK_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Shield_break.wav")
+        self.HIT_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Hit.wav")
+        self.DEATH_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Death.wav")
+        self.KILL_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Kill.wav")
+        self.DRAGON_ATTACK_SOUND = pygame.mixer.Sound(assets_dir / "Sound_effects/Dragon_attack.wav")
+
+        self.ALL_SOUND_EFFECTS = [
+            self.GAME_OVER_SOUND,
+            self.BUTTON_SOUND,
+            self.JUMP_SOUND,
+            self.SPEAR_SOUND,
+            self.SHIELD_PICKUP_SOUND,
+            self.SHIELD_BREAK_SOUND,
+            self.HIT_SOUND,
+            self.DEATH_SOUND,
+            self.KILL_SOUND,
+            self.DRAGON_ATTACK_SOUND,
+        ]
 
         for sound in self.ALL_SOUND_EFFECTS:
             sound.set_volume(self.sound_effects_volume)
