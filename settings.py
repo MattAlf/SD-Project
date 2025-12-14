@@ -61,6 +61,9 @@ class Settings:
         for sound in self.ALL_SOUND_EFFECTS:
             sound.set_volume(self.sound_effects_volume)
 
+        # Music tracks (load on demand in menus/gameplay).
+        self.MENU_MUSIC_PATH = assets_dir / "Menu_music.wav"
+        self.GAME_MUSIC_PATH = assets_dir / "In_game_music.wav"
         self.BACKGROUND_MUSIC_PATH = assets_dir / "background.mid"
         pygame.mixer.music.load(self.BACKGROUND_MUSIC_PATH)
 

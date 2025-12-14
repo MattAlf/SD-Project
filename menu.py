@@ -415,6 +415,12 @@ class GameOverMenu:
 def run_main_menu(screen, windowed_size, settings, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock):
     """Main menu loop; exits when the user starts the game or quits."""
     pygame.mixer.music.stop()
+    try:
+        pygame.mixer.music.load(settings.MENU_MUSIC_PATH)
+        pygame.mixer.music.set_volume(settings.music_volume)
+        pygame.mixer.music.play(-1)
+    except pygame.error:
+        pass  # Fail silently if the menu track is unavailable.
     current_menu = "MAIN"  # Tracks whether we are in the main or options menu.
     while True:
         for event in pygame.event.get():  # Poll menu events.

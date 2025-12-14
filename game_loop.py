@@ -54,6 +54,14 @@ def run_game_round(screen, settings, pause_menu, game_over_menu, font, game_over
             pygame.mixer.music.set_volume(pause_music_volume)
             music_muted_for_pause = False
 
+    try:
+        pygame.mixer.music.load(settings.GAME_MUSIC_PATH)
+    except pygame.error:
+        try:
+            pygame.mixer.music.load(settings.BACKGROUND_MUSIC_PATH)
+        except pygame.error:
+            pass
+    pygame.mixer.music.set_volume(settings.music_volume)
     pygame.mixer.music.play(-1, 0.0)  # Loop background music for this round.
 
     fps_clock = pygame.time.Clock()
