@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from settings import settings, terminate
+from settings import settings
 import random
 
 
@@ -79,36 +79,32 @@ class Player(pygame.sprite.Sprite):
 
         if self.attack_right or self.attack_left:
             if self.attack_right:
-                self.animate(self.player_images['PLAYER_ATTACK_RIGHT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_ATTACK_RIGHT'])
             else:
-                self.animate(self.player_images['PLAYER_ATTACK_LEFT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_ATTACK_LEFT'])
         elif self.in_a_jump:
             if self.velocity.x > 0:
-                self.animate(self.player_images['PLAYER_JUMP_RIGHT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_JUMP_RIGHT'])
             else:
-                self.animate(self.player_images['PLAYER_JUMP_LEFT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_JUMP_LEFT'])
         elif self.run_left or self.run_right:
             if self.run_right:
-                self.animate(self.player_images['PLAYER_RUN_RIGHT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_RUN_RIGHT'])
             else:
-                self.animate(self.player_images['PLAYER_RUN_LEFT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_RUN_LEFT'])
         else:
             if self.velocity.x > 0:
-                self.animate(self.player_images['PLAYER_IDLE_RIGHT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_IDLE_RIGHT'])
             else:
-                self.animate(self.player_images['PLAYER_IDLE_LEFT'], settings.PLAYER_ANIMATION_SLOWER)
+                self.animate(self.player_images['PLAYER_IDLE_LEFT'])
 
-        if not self.drop_through:
-            self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
+        self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
         self.velocity += self.acceleration
         self.position += self.velocity + 0.5 * self.acceleration
 
         self.check_for_screen_border_collision()
         self.rect.bottomleft = self.position
-        self.full_image_rect.bottomleft = (
-            self.rect.left - self.HITBOX_X_OFFSET,
-            self.rect.bottom + self.HITBOX_Y_OFFSET,
-        )
+        self.full_image_rect.bottomleft = (self.rect.left - self.HITBOX_X_OFFSET, self.rect.bottom + self.HITBOX_Y_OFFSET)
         self.check_platform_collisions(platform_group)
         self.check_ground_collision(ground_group)
 
@@ -128,9 +124,9 @@ class Player(pygame.sprite.Sprite):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
         if touched_platforms and not self.drop_through and self.velocity.y > 0 and self.rect.bottom < touched_platforms[0].rect.bottom:
             self.position.y = touched_platforms[0].rect.top
-            self.position.x -= settings.PLATFORM_SPEED
+            if not (self.run_right or self.run_left):
+                self.position.x -= settings.PLATFORM_SPEED
             self.velocity.y = 0
-            self.drop_through = False
             self.on_platform = True
             self.in_a_jump = False
         else:
@@ -140,8 +136,9 @@ class Player(pygame.sprite.Sprite):
         touched_ground = pygame.sprite.spritecollide(self, ground_group, False)
         if touched_ground:
             self.position.y = touched_ground[0].rect.top
+            if not (self.run_right or self.run_left):
+                self.position.x -= settings.GROUND_IMAGE_AND_SPEED[1]
             self.velocity.y = 0
-            self.drop_through = False
             self.on_ground = True
             self.in_a_jump = False
         else:
@@ -175,23 +172,25 @@ class Player(pygame.sprite.Sprite):
                 self.attack_left = True
             start_x = self.rect.centerx
             start_y = self.rect.centery
+            settings.ALL_SOUND_EFFECTS['SPEAR_THROW'].play()
             new_spear = Spear(start_x, start_y, current_direction)
             spear_group.add(new_spear)
 
-    def animate(self, list_of_images, animation_speed):
-        if self.current_image_index < animation_speed * len(list_of_images) - 1:
+    def animate(self, list_of_images):
+        if self.current_image_index < settings.PLAYER_ANIMATION_SLOWER * len(list_of_images) - 1:
             self.current_image_index += 1
         else:
             self.current_image_index = 0
-        raw_image = list_of_images[self.current_image_index // animation_speed]
+        raw_image = list_of_images[self.current_image_index // settings.PLAYER_ANIMATION_SLOWER]
         self.image = raw_image
-        if (self.attack_left or self.attack_right) and self.current_image_index == animation_speed * len(list_of_images) - 1:
+        if (self.attack_left or self.attack_right) and self.current_image_index == settings.PLAYER_ANIMATION_SLOWER * len(list_of_images) - 1:
             self.attack_right = False
             self.attack_left = False
 
     def check_for_pickable_objects_collision(self, shield_pickup_group, shield_effect_group):
         collected_shield_object = pygame.sprite.spritecollide(self, shield_pickup_group, True)
         if collected_shield_object and not self.has_shield:
+            settings.ALL_SOUND_EFFECTS['SHIELD_PICKUP'].play()
             self.has_shield = True
             self.shield_timer = self.current_time + settings.SHIELD_DURATION_TIME
             shield_effect_group.add(ShieldEffect(self))
@@ -201,8 +200,10 @@ class Player(pygame.sprite.Sprite):
         touched_fireball = pygame.sprite.spritecollide(self, fireball_group, True)
         touched_dragon = pygame.sprite.spritecollide(self, dragon_group, False)
         if touched_ghost or touched_fireball:
+            settings.ALL_SOUND_EFFECTS['SHIELD_BREAK'].play()
             self.take_damage()
         if touched_dragon:
+            settings.ALL_SOUND_EFFECTS['SHIELD_BREAK'].play()
             self.take_damage()
             if self.velocity.x > 0 and self.velocity.y > 0:
                 self.position.x -= 20
@@ -219,9 +220,11 @@ class Player(pygame.sprite.Sprite):
 
     def take_damage(self):
         if self.has_shield:
+            settings.ALL_SOUND_EFFECTS['SHIELD_BREAK'].play()
             self.has_shield = False
             return
         if not self.is_invulnerable:
+            settings.ALL_SOUND_EFFECTS['PLAYER_HIT'].play()
             self.lives -= 1
             if self.lives > 0:
                 self.is_invulnerable = True
@@ -248,6 +251,7 @@ class Spear(pygame.sprite.Sprite):
         if self.rect.right < 0 or self.rect.left > settings.WINDOW_WIDTH:
             self.kill()
         if pygame.sprite.spritecollide(self, ghost_group, True):
+            settings.ALL_SOUND_EFFECTS['KILL'].play()
             self.kill()
             Spear.kill_count += 1
 
@@ -320,12 +324,14 @@ class Dragon(pygame.sprite.Sprite):
             dy = self.player.rect.centery - self.rect.centery
             
             # Créer une boule de feu
+            settings.ALL_SOUND_EFFECTS['DRAGON_ATTACK'].play()
             fireball = Fireball(self.rect.centerx, self.rect.centery, dx, dy, settings.FIREBALL_IMAGE, score)
             fireball_group.add(fireball)
         
         # Vérifier les collisions avec les spears
         hit_spears = pygame.sprite.spritecollide(self, spear_group, True)
         if hit_spears:
+            settings.ALL_SOUND_EFFECTS['KILL'].play()
             self.health -= 1
             if self.health <= 0:
                 self.kill()

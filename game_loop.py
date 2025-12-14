@@ -9,6 +9,7 @@ from settings import settings, terminate
 
 def run_game_round(screen, pause_menu, game_over_menu, font):
     '''Run a single game round; returns a next action when the player pauses or dies.'''
+    pygame.mixer.music.load(settings.assets_dir / 'musics/in_game_music.wav')
     background_group, ground_group = settings.initialize_static_layers(screen)  # Static scenery.
 
     # Core game state setup.
@@ -50,39 +51,42 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
         pygame.mixer.music.unpause()
 
     pygame.mixer.music.play(-1, 0.0)  # Loop background music for this round.
-
+    clock = pygame.time.Clock()                
     while True:
-        clock = pygame.time.Clock()                
         events = pygame.event.get()  # Capture all events for this frame.
         for event in events:
             if event.type == QUIT:
                 terminate()
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
+                if paused:
+                    resume_game()
+                else:
+                    pause_game()
+        if paused:
+            for event in events:
+                result = pause_menu.handle_event(event)  # Handle pause menu buttons.
+                if result == 'RESUME':
+                    resume_game()
+                elif result == 'MAIN_MENU':
+                    return 'MAIN_MENU'
+                elif result == 'EXIT':
+                    terminate()
+            pause_menu.draw(screen)
+            pygame.display.update()
+            clock.tick(settings.FPS)
+            continue
+        for event in events:
             if event.type == KEYDOWN:
                 if event.key in (K_UP, K_w) and (player.on_ground or player.on_platform):
                     player.jump(ground_group, platform_group)
+                    settings.ALL_SOUND_EFFECTS['PLAYER_JUMP'].play()
                 if event.key in (K_SPACE, K_RETURN, K_KP_ENTER) and (not player.attack_left and not player.attack_right):
                     player.attack(spear_group)
-                if event.key == K_DOWN and player.on_platform:
+                if event.key == K_DOWN:
                     player.drop_through = True
-                    player.velocity.x = -settings.PLATFORM_SPEED  # keep platform inertia while dropping
-                if event.key == K_ESCAPE:
-                    if paused:
-                        resume_game()
-                    else:
-                        pause_game()
-                if paused:
-                    result = pause_menu.handle_event(event)  # Handle pause menu buttons.
-                    if result == 'RESUME':
-                        resume_game()
-                    elif result == 'MAIN_MENU':
-                        return 'MAIN_MENU'
-                    elif result == 'EXIT':
-                        terminate()
-            if paused:
-                pause_menu.draw(screen)
-                pygame.display.update()
-                clock.tick(settings.FPS)
-                continue
+            if event.type == KEYUP and event.key == K_DOWN:
+                player.drop_through = False
+                
         # Here we look at the state of the all the keys at each frame. It is useful because
         # running left or right are continuous movements.
         keys = pygame.key.get_pressed()
@@ -140,25 +144,27 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
 
         # Draw everything.
         background_group.draw(screen)
-        settings.draw_score(screen, font, score)
-        settings.draw_kill_counter(screen, font, kill_counter)
-        shield_pickup_group.draw(screen)
 
         screen.blit(player.image, player.full_image_rect)
-        for ground in ground_group:
-            screen.blit(ground.image, ground.full_image_rect)
-
         shield_effect_group.draw(screen)
-        ghost_group.draw(screen)
+
         platform_group.draw(screen)
+        ghost_group.draw(screen)
+        shield_pickup_group.draw(screen)
         spear_group.draw(screen)
         dragon_group.draw(screen)
         fireball_group.draw(screen)
+
+        for ground in ground_group:
+            screen.blit(ground.image, ground.full_image_rect)
+        settings.draw_hud(screen, font, score, kill_counter)
         settings.draw_lives(screen, player)
 
         pygame.display.update()  # Present frame.
 
         if player.dead:
+            settings.ALL_SOUND_EFFECTS['PLAYER_DEATH'].play()
+            settings.ALL_SOUND_EFFECTS['GAME_OVER'].play()
             score += 50 * kill_counter
             settings.highest_score = max(score, settings.highest_score)
             break
@@ -167,7 +173,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
 
     # Show the game over screen with retry/main menu options.
     pygame.mixer.music.stop()
-    settings.ALL_SOUND_EFFECTS['GAME_OVER_SOUND'].play()
+    settings.ALL_SOUND_EFFECTS['GAME_OVER'].play()
     game_over_menu.create_buttons()
 
     while True:
@@ -176,10 +182,10 @@ def run_game_round(screen, pause_menu, game_over_menu, font):
                 terminate()
             action = game_over_menu.handle_event(event)
             if action == 'RETRY':
-                settings.ALL_SOUND_EFFECTS['GAME_OVER_SOUND'].stop()
+                settings.ALL_SOUND_EFFECTS['GAME_OVER'].stop()
                 return 'RETRY'
             if action == 'MAIN_MENU':
-                settings.ALL_SOUND_EFFECTS['GAME_OVER_SOUND'].stop()
+                settings.ALL_SOUND_EFFECTS['GAME_OVER'].stop()
                 return 'MAIN_MENU'
             if action == 'EXIT':
                 terminate()

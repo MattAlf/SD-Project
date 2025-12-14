@@ -20,8 +20,8 @@ class Settings:
     # Ghost related values.
     GHOST_MIN_SIZE = 40
     GHOST_MAX_SIZE = 60
-    GHOST_MIN_SPEED = 1
-    GHOST_MAX_SPEED = 8
+    GHOST_MIN_SPEED = 10
+    GHOST_MAX_SPEED = 14
     GHOST_SPAWN_RATE = 50 # It will be a spawn rate based on the FPS. (so 1 ghost every 20 frames)
     
     # Platform related values.
@@ -90,20 +90,22 @@ class Settings:
         self.HELP_ICON = pygame.image.load(self.assets_dir / 'menu_images/help_icon.png')
         self.FULLSCREEN_ICON = pygame.image.load(self.assets_dir / 'menu_images/fullscreen_icon.png')
 
+        self.WOOD_PANEL_IMAGE = pygame.image.load(self.assets_dir / "assets/wood_panel.png")
+
         # Loading the game related images.
         # Enemy related images.
-        self.GHOST_IMAGE = pygame.image.load(self.assets_dir / 'ghost.png')
-        self.DRAGON_IMAGE = pygame.image.load(self.assets_dir / 'dragon.png')
-        self.FIREBALL_IMAGE = pygame.image.load(self.assets_dir / 'fire_arrow.png')
+        self.GHOST_IMAGE = pygame.image.load(self.assets_dir / 'assets/ghost.png')
+        self.DRAGON_IMAGE = pygame.image.load(self.assets_dir / 'assets/dragon.png')
+        self.FIREBALL_IMAGE = pygame.image.load(self.assets_dir / 'assets/fire_arrow.png')
         # Player related images.
-        self.SPEAR_IMAGE = pygame.image.load(self.assets_dir / 'spear.png')
-        self.RED_HEART_IMAGE = pygame.image.load(self.assets_dir / 'red_heart.png')
-        self.BLUE_HEART_IMAGE = pygame.image.load(self.assets_dir / 'blue_heart.png')
-        self.SHIELD_EFFECT_IMAGE = pygame.image.load(self.assets_dir / 'shield_effect.png')
-        self.SHIELD_PICKUP_IMAGE = pygame.image.load(self.assets_dir / 'shield_pickup.png')
+        self.SPEAR_IMAGE = pygame.image.load(self.assets_dir / 'assets/spear.png')
+        self.RED_HEART_IMAGE = pygame.image.load(self.assets_dir / 'assets/red_heart.png')
+        self.BLUE_HEART_IMAGE = pygame.image.load(self.assets_dir / 'assets/blue_heart.png')
+        self.SHIELD_EFFECT_IMAGE = pygame.image.load(self.assets_dir / 'assets/shield_effect.png')
+        self.SHIELD_PICKUP_IMAGE = pygame.image.load(self.assets_dir / 'assets/shield_pickup.png')
         # Scenery related images.
-        self.PLATFORM_IMAGE = pygame.image.load(self.assets_dir / 'platform.png')
-        self.GROUND_IMAGE_AND_SPEED = (pygame.image.load(self.assets_dir / 'ground.png'), 10 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
+        self.PLATFORM_IMAGE = pygame.image.load(self.assets_dir / 'assets/platform.png')
+        self.GROUND_IMAGE_AND_SPEED = (pygame.image.load(self.assets_dir / 'assets/ground.png'), 10 * self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR)
         # Tuples of the background image layer associated wiht its scrolling speed. The images loop horizontally and make the effect of an infinite image.
         self.BACKGROUND_IMAGES_AND_SPEEDS = [
             (pygame.image.load(self.assets_dir / 'background_layers/1_sky.png'), self.BACKGROUND_SCROLL_SPEED_MULTIPLICATOR),
@@ -123,10 +125,6 @@ class Settings:
             'PLAYER_RUN_LEFT': [],
             'PLAYER_ATTACK_RIGHT': [],
             'PLAYER_ATTACK_LEFT': [],
-            'PLAYER_DIE_RIGHT': [],
-            'PLAYER_DIE_LEFT': [],
-            'PLAYER_HURT_RIGHT': [],
-            'PLAYER_HURT_LEFT': [],
             'PLAYER_IDLE_RIGHT': [],
             'PLAYER_IDLE_LEFT': [],
             'PLAYER_JUMP_RIGHT': [],
@@ -143,16 +141,6 @@ class Settings:
                     img = pygame.image.load(self.assets_dir / f'player_animations/player_attack_images/Knight_01__ATTACK_00{i}.png')
                     self.PLAYER_IMAGES['PLAYER_ATTACK_RIGHT'].append(img)
                     self.PLAYER_IMAGES['PLAYER_ATTACK_LEFT'].append(pygame.transform.flip(img, True, False))
-            elif 'DIE_RIGHT' in action:
-                for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f'player_animations/player_die_images/Knight_01__DIE_00{i}.png')
-                    self.PLAYER_IMAGES['PLAYER_DIE_RIGHT'].append(img)
-                    self.PLAYER_IMAGES['PLAYER_DIE_LEFT'].append(pygame.transform.flip(img, True, False))
-            elif 'HURT_RIGHT' in action:
-                for i in range(10):
-                    img = pygame.image.load(self.assets_dir / f'player_animations/player_hurt_images/Knight_01__HURT_00{i}.png')
-                    self.PLAYER_IMAGES['PLAYER_HURT_RIGHT'].append(img)
-                    self.PLAYER_IMAGES['PLAYER_HURT_LEFT'].append(pygame.transform.flip(img, True, False))
             elif 'IDLE_RIGHT' in action:
                 for i in range(10):
                     img = pygame.image.load(self.assets_dir / f'player_animations/player_idle_images/Knight_01__IDLE_00{i}.png')
@@ -171,13 +159,21 @@ class Settings:
         # Loading the sound effects and the background music.
         # The sound effects are stored in a dictionary like for the player animations.
         self.ALL_SOUND_EFFECTS = {
-            'GAME_OVER_SOUND': pygame.mixer.Sound(self.assets_dir / 'gameover.wav')
+            'BUTTON_CLICK': pygame.mixer.Sound(self.assets_dir / 'sound_effects/button.wav'),
+            'PLAYER_DEATH': pygame.mixer.Sound(self.assets_dir / 'sound_effects/death.wav'),
+            'DRAGON_ATTACK': pygame.mixer.Sound(self.assets_dir / 'sound_effects/dragon_attack.wav'),
+            'GAME_OVER': pygame.mixer.Sound(self.assets_dir / 'sound_effects/game_over.wav'),
+            'PLAYER_HIT': pygame.mixer.Sound(self.assets_dir / 'sound_effects/hit.wav'),
+            'PLAYER_JUMP': pygame.mixer.Sound(self.assets_dir / 'sound_effects/jump.wav'),
+            'KILL': pygame.mixer.Sound(self.assets_dir / 'sound_effects/kill.wav'),
+            'SHIELD_BREAK': pygame.mixer.Sound(self.assets_dir / 'sound_effects/shield_break.wav'),
+            'SHIELD_PICKUP': pygame.mixer.Sound(self.assets_dir / 'sound_effects/shield_pickup.wav'),
+            'SPEAR_THROW': pygame.mixer.Sound(self.assets_dir / 'sound_effects/spear.wav')
         }
         # Setting the sound effects volume level to self.sound_effects_volume for all soun effects.
         for sound in self.ALL_SOUND_EFFECTS.values():
             sound.set_volume(self.sound_effects_volume)
         # Loading the background music and setting it to self.music_volume volume level.
-        pygame.mixer.music.load(self.assets_dir / 'background.mid')
         pygame.mixer.music.set_volume(self.music_volume)
 
     def convert_and_scale_player_images(self):
@@ -306,42 +302,53 @@ class Settings:
         converted_fireball_image = self.FIREBALL_IMAGE.convert_alpha()
         self.FIREBALL_IMAGE = pygame.transform.scale(converted_fireball_image, (self.FIREBALL_SIZE, self.FIREBALL_SIZE))
         # Player related images.
-        self.RED_HEART_IMAGE = self.RED_HEART_IMAGE.convert_alpha()
-        self.BLUE_HEART_IMAGE = self.BLUE_HEART_IMAGE.convert_alpha()
+        converted_red_heart_image = self.RED_HEART_IMAGE.convert_alpha()
+        self.RED_HEART_IMAGE = pygame.transform.scale(converted_red_heart_image, (settings.PLAYER_LIVES_DISPLAY_SIZE, settings.PLAYER_LIVES_DISPLAY_SIZE))
+
+        converted_blue_heart_image = self.BLUE_HEART_IMAGE.convert_alpha()
+        self.BLUE_HEART_IMAGE = pygame.transform.scale(converted_blue_heart_image, (settings.PLAYER_LIVES_DISPLAY_SIZE, settings.PLAYER_LIVES_DISPLAY_SIZE))
 
         converted_shield_effect_img = self.SHIELD_EFFECT_IMAGE.convert_alpha()
-        self.SHIELD_EFFECT_IMAGE = pygame.transform.scale(converted_shield_effect_img, (self.PLAYER_HEIGHT + 10, self.PLAYER_HEIGHT + 10))
+        self.SHIELD_EFFECT_IMAGE = pygame.transform.scale(converted_shield_effect_img, (self.PLAYER_HEIGHT - 80, self.PLAYER_HEIGHT - 80))
 
         converted_shield_pickup_image = self.SHIELD_PICKUP_IMAGE.convert_alpha()
         self.SHIELD_PICKUP_IMAGE = pygame.transform.scale(converted_shield_pickup_image, (self.SHIELD_PICKUP_SIZE, self.SHIELD_PICKUP_SIZE))
 
         # Scenery related images.
         self.PLATFORM_IMAGE = self.PLATFORM_IMAGE.convert_alpha()
-        
-    def draw_score(self, surface, font, score, x=10, y=0, color=(0, 0, 122)):
-        '''Render the score text to the given surface.'''
-        text_surface = font.render(f'Score: {score}', True, color)
-        text_rect = text_surface.get_rect(topleft=(x, y))
-        surface.blit(text_surface, text_rect)
+        self.WOOD_PANEL_IMAGE = self.WOOD_PANEL_IMAGE.convert_alpha()
 
-    def draw_kill_counter(self, surface, font, kill_counter, x=10, y=30, color =(0,0,122)):
-        text_surface = font.render(f'Kill: {kill_counter}', True, color)
-        text_rect = text_surface.get_rect(topleft=(x, y))
-        surface.blit(text_surface, text_rect)
+    def draw_hud(self, surface, font, score, kill_counter):
+        self.score = score 
+        self.kill_counter = kill_counter
+
+        panel_rect = self.WOOD_PANEL_IMAGE.get_rect(topleft=(10, 10))
+        surface.blit(self.WOOD_PANEL_IMAGE, panel_rect)
+
+        score_surf = font.render(f"Score: {self.score}", True, (245, 245, 220))
+        best_surf  = font.render(f"Best: {settings.highest_score}", True, (245, 245, 220))
+        kill_surf  = font.render(f"Kills: {self.kill_counter}", True, (245, 245, 220))
+
+        left_x = panel_rect.left
+    
+        section_height = panel_rect.height // 3
+    
+        score_rect = score_surf.get_rect(midleft=(left_x + 20 , panel_rect.top + (section_height * 0.5 + 10)))
+        best_rect = best_surf.get_rect(midleft=(left_x + 20, panel_rect.top + (section_height * 1.5)))
+        kill_rect = kill_surf.get_rect(midleft=(left_x + 20, panel_rect.top + (section_height * 2.5 - 10)))
+
+        surface.blit(score_surf, score_rect)
+        surface.blit(best_surf, best_rect)
+        surface.blit(kill_surf, kill_rect)
 
     def draw_lives(self, surface, player):
         '''Draw the player's remaining lives as hearts on the top-right of the screen.'''
-        if not hasattr(player, 'lives'):
-            return
-        heart_image = self.BLUE_HEART_IMAGE if getattr(player, 'has_shield', False) else self.RED_HEART_IMAGE
         for i in range(player.lives):
-            left = (
-                self.WINDOW_WIDTH
-                - self.PLAYER_LIVES_MARGIN_X
-                - (self.PLAYER_LIVES_DISPLAY_SIZE * (i + 1))
-                - (self.PLAYER_LIVES_HEART_SPACING * i)
-            )
-            surface.blit(heart_image, (left, self.PLAYER_LIVES_MARGIN_Y))
+            heart_left = settings.WINDOW_WIDTH - settings.PLAYER_LIVES_MARGIN_X - (settings.PLAYER_LIVES_DISPLAY_SIZE * (i + 1)) - (settings.PLAYER_LIVES_HEART_SPACING * i)
+            if player.has_shield:
+                surface.blit(settings.BLUE_HEART_IMAGE, (heart_left, settings.PLAYER_LIVES_MARGIN_Y))
+            else:
+                surface.blit(settings.RED_HEART_IMAGE, (heart_left, settings.PLAYER_LIVES_MARGIN_Y))
 
     def initialize_static_layers(self, screen):
         '''Build and draw static layers once at startup.'''

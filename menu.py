@@ -77,7 +77,9 @@ class Button:
         surface.blit(button_surface, self.rect.topleft)
 
     def is_clicked(self, event):
-        return event.type == MOUSEBUTTONUP and event.button == 1 and self.rect.collidepoint(event.pos)
+        if event.type == MOUSEBUTTONUP and event.button == 1 and self.rect.collidepoint(event.pos):
+            settings.ALL_SOUND_EFFECTS['BUTTON_CLICK'].play()
+            return True
 
 # Drag-able horizontal volume slider.
 class VolumeSlider:
@@ -411,7 +413,8 @@ class GameOverMenu:
 
 def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock):
     '''Main menu loop; exits when the user starts the game or quits.'''
-    pygame.mixer.music.stop()
+    pygame.mixer.music.load(settings.assets_dir / 'musics/menu_music.wav')
+    pygame.mixer.music.play(-1, 0.0)
     current_menu = 'MAIN'  # Tracks whether we are in the main or options menu.
     while True:
         for event in pygame.event.get():  # Poll menu events.
