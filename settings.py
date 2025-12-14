@@ -87,6 +87,7 @@ class Settings:
         self.GAME_MUSIC_PATH = assets_dir / "In_game_music.wav"
         self.BACKGROUND_MUSIC_PATH = assets_dir / "background.mid"
         pygame.mixer.music.load(self.BACKGROUND_MUSIC_PATH)
+        pygame.mixer.music.set_volume(self.music_volume)
 
 
 
