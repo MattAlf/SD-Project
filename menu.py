@@ -371,17 +371,17 @@ class GameOverMenu:
     def draw(self, surface, score, kill_counter):
         surface.blit(settings.GAME_OVER_MENU_IMAGE, (0, 0))
 
-        title = self.font.render('Game Over', True, 'white')
-        title_rect = title.get_rect(center=(settings.WINDOW_WIDTH // 2, settings.WINDOW_HEIGHT // 3))
-        surface.blit(title, title_rect)
-
         score_text = self.font.render(f'Score: {score}', True, 'white')
-        score_rect = score_text.get_rect(center=(settings.WINDOW_WIDTH // 2, title_rect.bottom + 60))
+        score_rect = score_text.get_rect(center=(settings.WINDOW_WIDTH // 2, self.buttons[0].rect.top - 20))
         surface.blit(score_text, score_rect)
 
-        kill_counter_text = self.font.render(f'kill: {kill_counter}', True, 'white')
-        kill_counter_rect = kill_counter_text.get_rect(center=(settings.WINDOW_WIDTH // 2, (title_rect.bottom + score_rect.top)/2))
+        kill_counter_text = self.font.render(f'Kills: {kill_counter}', True, 'white')
+        kill_counter_rect = kill_counter_text.get_rect(center=(settings.WINDOW_WIDTH // 2, (score_rect.top - 20)))
         surface.blit(kill_counter_text, kill_counter_rect)
+
+        highest_score_text = self.font.render(f'Highest score: {settings.highest_score}', True, 'white')
+        highest_score_rect = highest_score_text.get_rect(center=(settings.WINDOW_WIDTH // 2, (kill_counter_rect.top - 20)))
+        surface.blit(highest_score_text, highest_score_rect)
 
         for b in self.buttons:
             b.draw(surface)

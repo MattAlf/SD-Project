@@ -54,7 +54,6 @@ class Settings:
     PLAYER_LIVES_HEART_SPACING = 5 # In pixels, it's the space between the hearts' images.
 
     # Dragon related values.
-    DRAGON_WIDTH = 200 # In pixels.
     DRAGON_HEIGHT = 200 # In pixels.
     DRAGON_ATTACK_COOLDOWN = 1000 # In milliseconds.
     FIREBALL_SIZE = 30 # In pixels.
@@ -77,6 +76,7 @@ class Settings:
     def __init__(self):
         # This variable is used to remember if the window is in fullscreen or not when the toggle_fullscreen function is used.
         self.is_fullscreen = False
+        self.highest_score = 0
 
         self.assets_dir = Path(__file__).parent # It makes locating the files more safe. (avoiding wrong directory problems)
         
@@ -235,6 +235,19 @@ class Settings:
         draw_height = int(original_height * scale_factor)
 
         self.SPEAR_IMAGE = pygame.transform.scale(converted_original_img, (draw_width, draw_height))
+    
+    def convert_and_scale_dragon_image(self):
+        converted_original_img = self.DRAGON_IMAGE.convert_alpha()
+
+        target_height = self.DRAGON_HEIGHT
+        original_width = converted_original_img.get_width()
+        original_height = converted_original_img.get_height()
+        scale_factor = target_height / original_height
+
+        draw_height = target_height
+        draw_width = int(original_width * scale_factor)
+
+        self.DRAGON_IMAGE = pygame.transform.scale(converted_original_img, (draw_width, draw_height))
 
     def create_window(self):
         '''Create a resizable window using the current settings dimensions.'''
@@ -262,6 +275,7 @@ class Settings:
         self.convert_background_images()
         self.convert_and_scale_spear_image()
         self.convert_and_scale_ground_image()
+        self.convert_and_scale_dragon_image()
         # Menu related images.
         converted_main_menu = self.MAIN_MENU_IMAGE.convert_alpha()
         self.MAIN_MENU_IMAGE = pygame.transform.scale(converted_main_menu, self.WINDOW_DIMENSIONS)
@@ -288,8 +302,9 @@ class Settings:
         self.FULLSCREEN_ICON = pygame.transform.smoothscale(converted_fullscreen_icon, (50, 50))
         # Enemy related images.
         self.GHOST_IMAGE = self.GHOST_IMAGE.convert_alpha()
-        self.DRAGON_IMAGE = self.DRAGON_IMAGE.convert_alpha()
-        self.FIREBALL_IMAGE = self.FIREBALL_IMAGE.convert_alpha()
+
+        converted_fireball_image = self.FIREBALL_IMAGE.convert_alpha()
+        self.FIREBALL_IMAGE = pygame.transform.scale(converted_fireball_image, (self.FIREBALL_SIZE, self.FIREBALL_SIZE))
         # Player related images.
         self.RED_HEART_IMAGE = self.RED_HEART_IMAGE.convert_alpha()
         self.BLUE_HEART_IMAGE = self.BLUE_HEART_IMAGE.convert_alpha()

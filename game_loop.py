@@ -7,7 +7,7 @@ from entity import Player, Spear, ShieldPickup, ShieldEffect, Dragon, Fireball, 
 from settings import settings, terminate
 
 
-def run_game_round(screen, pause_menu, game_over_menu, font, global_high_score):
+def run_game_round(screen, pause_menu, game_over_menu, font):
     '''Run a single game round; returns a next action when the player pauses or dies.'''
     background_group, ground_group = settings.initialize_static_layers(screen)  # Static scenery.
 
@@ -25,7 +25,6 @@ def run_game_round(screen, pause_menu, game_over_menu, font, global_high_score):
     shield_effect_group = pygame.sprite.Group()
 
     score = 0
-    high_score = global_high_score
     kill_counter = 0
     Spear.kill_count = 0
 
@@ -120,11 +119,11 @@ def run_game_round(screen, pause_menu, game_over_menu, font, global_high_score):
             )
 
         # Update game objects.
-        player_group.update(current_time, ground_group, platform_group, ghost_group, shield_pickup_group, shield_effect_group)
+        player_group.update(current_time, ground_group, platform_group)
         platform_group.update()
         ghost_group.update()
         spear_group.update(ghost_group)
-        dragon_group.update(fireball_group, spear_group, score)
+        dragon_group.update(current_time, fireball_group, spear_group, score)
         fireball_group.update()
         background_group.update()
         ground_group.update()
@@ -133,6 +132,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font, global_high_score):
         kill_counter = Spear.kill_count
 
         player.check_for_enemy_collision(ghost_group, fireball_group, dragon_group)
+        player.check_for_pickable_objects_collision(shield_pickup_group, shield_effect_group)
                 
         # Check if dragon is dead and respawn ghosts
         if dragon_alive and len(dragon_group) == 0:
@@ -160,6 +160,7 @@ def run_game_round(screen, pause_menu, game_over_menu, font, global_high_score):
 
         if player.dead:
             score += 50 * kill_counter
+            settings.highest_score = max(score, settings.highest_score)
             break
 
         clock.tick(settings.FPS)  # Control FPS inside game loop.

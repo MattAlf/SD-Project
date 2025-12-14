@@ -69,7 +69,7 @@ class Player(pygame.sprite.Sprite):
         self.attack_left = False
         self.drop_through = False
 
-    def update(self, current_time, ground_group, platform_group, ghost_group, shield_pickup_group, shield_effect_group):
+    def update(self, current_time, ground_group, platform_group):
         self.current_time = current_time
         self.acceleration = pygame.math.Vector2(0, self.VERTICAL_ACCELERATION)
         if self.run_right:
@@ -123,9 +123,6 @@ class Player(pygame.sprite.Sprite):
                 self.image.set_alpha(0 if self.current_time // 100 % 2 == 0 else 255)
         else:
             self.image.set_alpha(255)
-
-        self.check_for_pickable_objects_collision(shield_pickup_group, shield_effect_group)
-        self.check_for_enemy_collision(ghost_group)
 
     def check_platform_collisions(self, platform_group):
         touched_platforms = pygame.sprite.spritecollide(self, platform_group, False)
@@ -284,7 +281,7 @@ class Dragon(pygame.sprite.Sprite):
     def __init__(self, player):
         super().__init__()
         # Image et affichage
-        self.image = pygame.transform.scale(settings.DRAGON_IMAGE, (settings.DRAGON_WIDTH, settings.DRAGON_HEIGHT))
+        self.image = settings.DRAGON_IMAGE
         self.rect = self.image.get_rect()
         self.rect.centerx = settings.WINDOW_WIDTH // 2
         self.rect.top = 50  # Haut de l'écran
@@ -303,8 +300,7 @@ class Dragon(pygame.sprite.Sprite):
         # Santé du dragon
         self.health = 3
         
-    def update(self, fireball_group, spear_group, score):
-        current_time = pygame.time.get_ticks()
+    def update(self, current_time, fireball_group, spear_group, score):
         self.score = score
         # Mouvement vertical (va et vient dans la partie supérieure)
         self.rect.y += self.speed_y * self.direction_y
@@ -329,7 +325,7 @@ class Dragon(pygame.sprite.Sprite):
         
         # Vérifier les collisions avec les spears
         hit_spears = pygame.sprite.spritecollide(self, spear_group, True)
-        for spear in hit_spears:
+        if hit_spears:
             self.health -= 1
             if self.health <= 0:
                 self.kill()
@@ -339,7 +335,7 @@ class Fireball(pygame.sprite.Sprite):
     def __init__(self, position_x, position_y, direction_x, direction_y, fireball_image, score):
         super().__init__()
         # Redimensionner l'image
-        self.image = pygame.transform.scale(fireball_image, (settings.FIREBALL_SIZE, settings.FIREBALL_SIZE))
+        self.image = settings.FIREBALL_IMAGE
         self.rect = self.image.get_rect()
         self.rect.center = (position_x, position_y)
         
