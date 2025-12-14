@@ -428,7 +428,9 @@ class GameOverMenu:
                     return 'EXIT'
         return None
 
+# Define the main menu loop
 def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock):
+    # Below is a Docstring: store the function that is accessible at run time
     '''Main menu loop; exits when the user starts the game or quits.'''
     pygame.mixer.music.load(settings.assets_dir / 'musics/menu_music.wav')
     # Loop the menu track until leaving the menu
@@ -489,11 +491,11 @@ def run_main_menu(screen, main_menu, options_menu, help_menu, story_menu, clock)
         pygame.display.update()
         clock.tick(settings.FPS)
 
+# creates a fullscreen fuction
 def toggle_fullscreen(screen):
     '''Toggle fullscreen/windowed modes and refresh layout-dependent assets.'''
 
     if settings.is_fullscreen:
-        # Switch to windowed
         try:
             screen = pygame.display.set_mode(
                 settings.WINDOW_DIMENSIONS,
