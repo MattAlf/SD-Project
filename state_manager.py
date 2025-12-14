@@ -3,7 +3,7 @@ import pygame
 from menu import show_main_menu
 from game_loop import run_game_round
 
-def run_app(settings, screen, windowed_size, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock, font):
+def run_app(settings, screen, windowed_size, main_menu, options_menu, pause_menu, game_over_menu, help_menu, clock, font, global_high_score):
     """
     Coordinates the main menu and gameplay loops.
     Returns when the process exits.
@@ -35,7 +35,12 @@ def run_app(settings, screen, windowed_size, main_menu, options_menu, pause_menu
                 pause_menu,
                 game_over_menu,
                 font,
-                settings.GAME_OVER_SOUND
+                settings.GAME_OVER_SOUND,
+                global_high_score
             )
             if result == "MAIN_MENU":
                 break
+            else:
+                global_high_score = result
+                with open("highscore.txt", "w") as f:
+                    f.write(str(global_high_score))

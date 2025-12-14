@@ -141,7 +141,7 @@ class Settings:
         self.DRAGON_ATTACK_COOLDOWN = 1000  # ms
         self.FIREBALL_SIZE_BASE = 30
         self.FIREBALL_SPEED_BASE = 5
-
+        
         # Initialize with the base size; the game will call resize with the actual display size.
         self.resize(self.DEFAULT_WINDOW_WIDTH, self.DEFAULT_WINDOW_HEIGHT)
 
